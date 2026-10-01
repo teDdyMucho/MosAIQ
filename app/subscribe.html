@@ -1,0 +1,37 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Membership required — RavMizAI</title><meta name="theme-color" content="#070913"><link rel="stylesheet" href="../assets/styles.css"></head><body class="appBody">
+
+<header class="appTop"><div class="wrap appNav"><a class="brand" href="home.html"><span class="brandmark">RM</span><span>RavMiz<b>AI</b></span></a><nav class="appLinks"><a href="home.html">⌂ Home</a><a href="call-intro.html">✦ RavMizAI</a><a href="wallet.html">▣ Wallet</a><a href="preferences.html">☰ Preferences</a></nav><div class="userMenu" id="userMenu"><button class="iconbtn" id="userMenuBtn"><span class="userInitial">U</span></button><div class="userMenuPanel"><div class="userHead"><b class="userName">Member</b><small class="userEmail"></small></div><a href="preferences.html">Profile &amp; Preferences</a><a href="wallet.html">Wallet</a><a href="billing.html">Membership &amp; Billing</a><a href="../about.html">About RavMizAI</a><a href="#" id="signOut">Sign out</a></div></div></div></header>
+
+<main class="appMain">
+ <div style="max-width:620px;margin:0 auto">
+
+  <section class="appCard" style="text-align:center">
+   <div class="eyebrow">Membership required</div>
+   <h1 class="appTitle" style="margin:14px 0 8px">Start your membership to talk with RavMizAI</h1>
+   <p class="appSub" id="gateReason">Voice calls and text conversations are available to members.</p>
+
+   <div style="margin:26px 0 6px;font-size:34px;color:var(--gold2);font-weight:800">$10.00
+    <span style="font-size:12px;color:#7f8ba1;font-weight:600">/ month</span></div>
+   <p class="appSub" style="font-size:11px">Begins with a 3-day free trial. Cancel any time.</p>
+
+   <div style="display:grid;gap:10px;margin:24px 0 8px;text-align:left">
+    <div class="rec" style="justify-content:flex-start;gap:12px"><span style="color:var(--gold2)">☎</span><span>Unlimited voice conversations</span></div>
+    <div class="rec" style="justify-content:flex-start;gap:12px"><span style="color:var(--gold2)">✎</span><span>Text RavMizAI whenever you need clarity</span></div>
+    <div class="rec" style="justify-content:flex-start;gap:12px"><span style="color:var(--gold2)">✦</span><span>Saved preferences and conversation history</span></div>
+   </div>
+
+   <div id="formError" class="error" style="margin-top:16px"></div>
+   <div id="formSuccess" class="success" style="margin-top:16px"></div>
+
+   <!-- Goes straight to payment: the visitor is already signed in, so the
+        signup form on free-trial.html would ask them to create a second
+        account. -->
+   <a class="btn btn-primary btn-full" style="margin-top:18px" href="../trial/payment.html">Start 3-day free trial →</a>
+   <a class="btn btn-outline btn-full" style="margin-top:10px" href="home.html">Back to home</a>
+  </section>
+
+ </div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><script src="../assets/supabase-config.js"></script><script src="../assets/auth.js"></script><script src="../assets/app.js"></script></body></html>

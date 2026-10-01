@@ -1,0 +1,93 @@
+# RavMizAI — Netlify deployment
+#
+# assets/supabase-config.js is gitignored (it holds project credentials), so it
+# is not in the repo. The build command regenerates it from the environment
+# variables set in the Netlify dashboard.
+#
+# Required in Netlify → Site configuration → Environment variables:
+#   SUPABASE_URL       https://ujqrmjoklinyxbnvyswa.supabase.co
+#   SUPABASE_ANON_KEY  the "anon public" key (never service_role)
+#
+# Do NOT add SUPABASE_DB_PASSWORD or SUPABASE_ACCESS_TOKEN — the site does not
+# use them and they must not reach a build that produces browser files.
+
+[build]
+  command = "node build-config.js"
+  publish = "."
+
+# Clean URLs: /about instead of /about.html
+[build.processing.html]
+  pretty_urls = true
+
+# ---------------------------------------------------------------------------
+# Security headers
+# ---------------------------------------------------------------------------
+[[headers]]
+  for = "/*"
+  [headers.values]
+    X-Frame-Options = "SAMEORIGIN"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "geolocation=(), camera=(), payment=()"
+
+# The generated config carries the public anon key. It is safe to serve, but it
+# must never be cached by a CDN edge after the key is rotated.
+[[headers]]
+  for = "/assets/supabase-config.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/assets/*.jpg"
+  [headers.values]
+    Cache-Control = "public, max-age=31536000, immutable"
+
+# app.js / auth.js / styles.css change with each deploy and have no hashed
+# filenames, so they must revalidate rather than sit in a long cache.
+[[headers]]
+  for = "/assets/*.js"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+[[headers]]
+  for = "/assets/*.css"
+  [headers.values]
+    Cache-Control = "public, max-age=0, must-revalidate"
+
+# ---------------------------------------------------------------------------
+# Keep server-side material out of the published site
+# ---------------------------------------------------------------------------
+# The SQL and Edge Function sources live in the repo but are not part of the
+# site. Serving them would expose the schema and the trial-granting logic.
+[[redirects]]
+  from = "/sql/*"
+  to = "/404.html"
+  status = 404
+
+[[redirects]]
+  from = "/supabase/*"
+  to = "/404.html"
+  status = 404
+
+# Belt and braces. .env must never be in the deploy at all — it holds the
+# database password and the Supabase access token, which grant full control of
+# the project. This blocks it from being served even if it reaches the bundle
+# (a drag-and-drop deploy of the folder would include it, since that path
+# ignores .gitignore).
+[[redirects]]
+  from = "/.env"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/.env*"
+  to = "/404.html"
+  status = 404
+  force = true
+
+[[redirects]]
+  from = "/build-config.js"
+  to = "/404.html"
+  status = 404
+  force = true
