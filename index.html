@@ -1,63 +1,386 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>RavMizAI — Torah. Truth. Clarity.</title><meta name="theme-color" content="#070913"><link rel="stylesheet" href="assets/styles.css"></head><body>
+<title>RavMizAI — Torah. Truth. Clarity.</title><meta name="theme-color" content="#0C2147">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Assistant:wght@400;600;700&family=Frank+Ruhl+Libre:wght@500;700&family=Marcellus&display=swap">
+<style>
+:root{--navy:#0C2147;--ink2:#3D4A66;--accent:#1668D6;--gold:#E3B655;--gold-d:#D4A03A;--brown:#7A5A10;--tint:#F3F6FB;--line:#CBD6EA;--soft:#C5D0E6;--dash:#8FA3C8;--sky:#36C3F2;
+ --serif:'Marcellus',Georgia,serif;--heb:'Frank Ruhl Libre','Times New Roman',serif;--pad:clamp(20px,5vw,48px);--sec:clamp(56px,8vw,104px)}
+*{box-sizing:border-box}
+body{margin:0;background:#FFFFFF;color:var(--navy);font-family:'Assistant','Segoe UI',Helvetica,sans-serif;font-size:18px;line-height:1.6;-webkit-font-smoothing:antialiased}
+img{max-width:100%;display:block}
+a{color:var(--accent)}a:hover{color:var(--navy)}
+a:focus-visible,button:focus-visible,input:focus-visible,summary:focus-visible{outline:3px solid var(--gold-d);outline-offset:3px}
+summary{cursor:pointer}
+p{margin:0}
+.wrap{max-width:1200px;margin:0 auto;padding:var(--sec) var(--pad)}
+.eyebrow{font-size:13px;font-weight:700;letter-spacing:.18em;text-transform:uppercase;color:var(--brown)}
+.h2{margin:0;font-family:var(--serif);font-weight:400;font-size:clamp(34px,4.4vw,58px);line-height:1.06;text-wrap:balance}
+.h3{margin:0;font-family:var(--serif);font-weight:400;font-size:28px;line-height:1.15}
+.muted{color:var(--ink2)}
+.he{font-family:var(--heb);font-weight:700}
+.head{display:flex;flex-direction:column;gap:12px;max-width:760px}
+.row{display:flex;flex-wrap:wrap;gap:20px}
+.pill{display:flex;align-items:center;min-height:44px;padding:10px 22px;border-radius:999px;font-weight:700;text-decoration:none}
+.textlink{min-height:44px;display:flex;align-items:center;font-weight:700}
 
-<nav class="nav"><div class="wrap navin">
-<a class="brand" href="index.html"><span class="brandmark">RM</span><span>RavMiz<b>AI</b></span></a>
-<div class="navlinks" id="navLinks">
+/* header */
+.top{background:#FFFFFF;border-bottom:1px solid var(--line)}
+.top .in{max-width:1200px;margin:0 auto;padding:12px var(--pad);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 32px}
+.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--navy);min-height:56px}
+.brand img{height:56px;width:auto}
+.brand span{font-family:var(--serif);font-size:26px;line-height:1}
+.brand b{font-weight:400;color:var(--accent)}
+.mainnav{display:flex;flex-wrap:wrap;gap:4px 28px;font-size:16px;font-weight:600}
+.mainnav a{color:var(--ink2);text-decoration:none;padding:10px 0}
+.mainnav a:hover{color:var(--navy)}
+.navtools{display:flex;gap:12px;align-items:center}
+.btn{font-size:16px}
+.btn-login{color:var(--navy);text-decoration:none;font-weight:700;padding:10px 18px;min-height:44px;display:flex;align-items:center}
+.btn-primary{background:var(--navy);color:#FFFFFF}.btn-primary:hover{color:#FFFFFF;background:#163266}
+
+/* email signup */
+.signup{display:flex;flex-direction:column;gap:8px}
+.signup label{font-size:14px;font-weight:700}
+.signup .fields{display:flex;flex-wrap:wrap;gap:10px}
+.signup input{flex:1 1 240px;min-width:0;font:inherit;color:var(--navy);background:#FFFFFF;border:2px solid var(--navy);border-radius:999px;padding:12px 22px;min-height:54px}
+.signup button{font:inherit;font-weight:700;color:#FFFFFF;background:var(--accent);border:0;border-radius:999px;padding:12px 28px;min-height:54px;cursor:pointer}
+.signup button:hover{background:#0F57B8}
+
+/* hero */
+.hero{max-width:1200px;margin:0 auto;padding:clamp(40px,6vw,80px) var(--pad);display:flex;flex-wrap:wrap;align-items:center;gap:40px 64px}
+.hero .copy{flex:999 1 480px;min-width:0;display:flex;flex-direction:column;gap:24px}
+.hero h1{margin:0;font-family:var(--serif);font-weight:400;font-size:clamp(42px,5.8vw,80px);line-height:1.04;letter-spacing:-.01em;text-wrap:balance}
+.hero .lede{max-width:34em;font-size:clamp(18px,1.5vw,21px)}
+.hero .signup{max-width:560px}
+.hero .facts{font-size:15px}
+.hero .links{display:flex;flex-wrap:wrap;gap:8px 28px}
+
+/* aleph-bet band */
+.band{background:var(--tint);border-top:1px solid var(--line);border-bottom:1px solid var(--line);overflow:hidden;padding:10px 0}
+.band div{display:flex;gap:44px;width:max-content;animation:marquee 70s linear infinite;font-family:var(--heb);font-weight:700;font-size:34px;line-height:1.3}
+.band .g{color:#B8861F}
+
+/* about */
+#about{position:relative;overflow:hidden;background:#FFFFFF}
+#about .bgphoto{position:absolute;left:max(-60px,calc(50% - 660px));bottom:0;height:min(76%,740px);width:auto;aspect-ratio:1/1;object-fit:cover;max-width:none;opacity:.14;pointer-events:none;-webkit-mask-image:radial-gradient(ellipse 62% 66% at 44% 54%,#000 50%,transparent 100%);mask-image:radial-gradient(ellipse 62% 66% at 44% 54%,#000 50%,transparent 100%)}
+#about .wrap{position:relative;display:flex;flex-wrap:wrap;gap:48px 72px}
+#about .l{flex:1 1 340px;min-width:0;display:flex;flex-direction:column;gap:24px}
+#about .r{flex:1 1 440px;min-width:0;display:flex;flex-direction:column;gap:28px}
+.chain{position:relative;border-left:3px solid var(--gold-d)}
+.chain .dot{position:absolute;left:-10px;top:0;width:17px;height:17px;margin-top:-8px;border-radius:50%;background:var(--gold-d);box-shadow:0 0 0 6px rgba(212,160,58,.25);animation:travel 9s ease-in-out infinite}
+.chain ol{list-style:none;margin:0;padding:0;display:flex;flex-direction:column}
+.chain li{display:flex;flex-wrap:wrap;align-items:baseline;gap:4px 24px;padding:0 0 24px 24px}
+.chain li:last-child{padding-bottom:0}
+.chain .he{flex:0 0 130px;font-size:28px;line-height:1.2;text-align:left;color:var(--accent)}
+.chain li>span:last-child{flex:1 1 260px;min-width:0}
+.source{font-size:15px}
+.stats{display:flex;flex-wrap:wrap;border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.stats div{flex:1 1 130px;padding:18px 16px 18px 0;display:flex;flex-direction:column;gap:4px}
+.stats div:last-child{padding-right:0}
+.stats b{font-family:var(--serif);font-weight:400;font-size:38px;line-height:1}
+.stats span{font-size:13px;font-weight:700;letter-spacing:.12em;text-transform:uppercase;color:var(--ink2)}
+
+/* mission */
+.dark{background:var(--navy);color:#FFFFFF}
+.dark .muted{color:var(--soft)}
+#mission .wrap{display:flex;flex-direction:column;gap:48px}
+#mission .top-row{display:flex;flex-wrap:wrap;align-items:center;gap:32px 64px}
+#mission .top-row>div{flex:999 1 460px;min-width:0;display:flex;flex-direction:column;gap:16px}
+#mission .eyebrow{color:var(--gold)}
+#mission h2{font-size:clamp(34px,4.6vw,62px)}
+#mission svg{flex:0 1 220px;width:220px;max-width:100%;height:auto}
+.pillar{flex:1 1 260px;min-width:0;border-top:2px solid var(--gold);padding-top:18px;display:flex;flex-direction:column;gap:8px}
+.pillar .he{font-size:52px;line-height:1.15;text-align:left;color:var(--gold)}
+.pillar h3{margin:0;font-family:var(--serif);font-weight:400;font-size:26px;line-height:1.2}
+
+/* offer + numbers cards */
+.stack{display:flex;flex-direction:column;gap:40px}
+.card{flex:1 1 250px;min-width:0;background:var(--tint);border:1px solid var(--line);border-radius:16px;padding:26px;display:flex;flex-direction:column;gap:14px}
+.card.navy{background:var(--navy);border-color:var(--navy);color:#FFFFFF}
+.card .big{font-family:var(--serif);font-size:44px;line-height:48px;color:var(--accent)}
+.card .tag{font-family:var(--serif);font-size:22px;line-height:48px;color:var(--ink2)}
+.card .cta{margin-top:auto;align-self:flex-start}
+.card.navy .pill{background:#FFFFFF;color:var(--navy)}
+.card.navy .muted{color:var(--soft)}
+.wave{display:flex;align-items:center;gap:5px;height:48px}
+.wave span{width:5px;border-radius:3px;background:var(--sky);animation:wave 1.1s ease-in-out infinite}
+.tinted{background:var(--tint);border-top:1px solid var(--line);border-bottom:1px solid var(--line)}
+.num{background:#FFFFFF;padding:28px;gap:16px}
+.num.wide{flex:2 1 460px}.num.narrow{flex:1 1 300px}
+.num .hd{display:flex;justify-content:space-between;align-items:baseline;gap:12px}
+.num .n{font-family:var(--serif);font-size:60px;line-height:1}
+.num .hd .he{font-size:30px;line-height:1}
+.num strong{color:var(--navy)}
+.split{display:flex;height:46px;border-radius:8px;overflow:hidden;transform-origin:left center;animation:growx 1.4s ease-out both}
+.split div{display:flex;align-items:center;padding-left:14px;font-weight:700;font-variant-numeric:tabular-nums;color:#FFFFFF}
+.dial{position:relative;width:180px;height:180px;max-width:100%;align-self:center}
+.dial i{position:absolute;left:50%;top:50%;width:3px;height:14px;margin:-7px 0 0 -1.5px;border-radius:2px;background:var(--dash)}
+.dial .hand{position:absolute;inset:0;animation:hop 54s steps(54) infinite}
+.dial .hand span{position:absolute;left:50%;top:0;width:7px;height:24px;margin-left:-3.5px;border-radius:4px;background:var(--gold-d)}
+.dial .c{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-family:var(--serif);font-size:60px}
+.days{position:relative;display:flex;height:36px;border-radius:8px;overflow:hidden;background:var(--line)}
+.days span{flex:1 1 0;border-right:2px solid #FFFFFF}.days span:last-of-type{border-right:0}
+.days .mark{position:absolute;left:0;top:0;width:10%;height:100%;background:var(--gold-d);border:0;animation:slide10 10s steps(10) infinite}
+.days-l{display:flex;justify-content:space-between;gap:12px;font-size:14px;font-weight:700;color:var(--ink2)}
+
+/* hero visual: the phone is the menorah's centre lamp; its arms curve out from behind it.
+   Drawn at a fixed 520×700 and scaled down as one piece on narrow screens. */
+.hero-visual{flex:0 1 520px;min-width:0;margin:0 auto;display:flex;justify-content:center}
+.lamp{position:relative;width:520px;height:700px;flex:none;border-radius:28px;background:radial-gradient(120% 90% at 50% 0%,#17306A 0%,var(--navy) 60%);box-shadow:0 30px 70px rgba(12,33,71,.25);overflow:hidden}
+.lamp-art{position:absolute;inset:0;width:100%;height:100%}
+.phone{position:absolute;left:145px;top:56px;width:230px;height:500px;border-radius:38px;padding:8px;background:linear-gradient(145deg,#24365F,#0A1330 55%,#1B2A4E);
+ box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),0 24px 50px rgba(0,0,0,.4),0 0 0 6px rgba(227,182,85,.12)}
+.phone:before{content:"";position:absolute;z-index:2;top:16px;left:50%;transform:translateX(-50%);width:70px;height:20px;border-radius:20px;background:#05070D}
+.phone .screen{height:100%}
+.lamp-verse{position:absolute;left:0;right:0;bottom:26px;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;padding:0 24px}
+.lamp-verse span{font-family:var(--heb);font-weight:500;font-size:28px;line-height:1.3;color:var(--gold)}
+.lamp-verse small{font-size:15px;color:var(--soft)}
+@media (max-width:600px){
+ .hero-visual{flex-basis:100%;height:476px}
+ .lamp{transform:scale(.68);transform-origin:top center}
+}
+@media (max-width:400px){
+ .hero-visual{height:420px}
+ .lamp{transform:scale(.6)}
+}
+.screen{border-radius:31px;overflow:hidden;background:linear-gradient(180deg,#FFFFFF 0%,#F3F6FB 100%);color:var(--navy);padding:50px 12px 14px;text-align:center}
+.screen .bar{display:flex;justify-content:space-between;font-size:10px;font-weight:700;letter-spacing:.1em;margin:-28px 6px 20px;color:var(--navy)}
+.screen .bar b{color:var(--brown);font-weight:700}
+.avatar{width:84px;height:84px;margin:0 auto 12px;border-radius:50%;overflow:hidden;border:3px solid var(--gold-d);box-shadow:0 0 0 8px rgba(212,160,58,.14)}
+.avatar img{width:100%;height:100%;object-fit:cover}
+.spark{width:34px;height:34px;margin:0 auto 10px;border-radius:999px;display:grid;place-items:center;font-size:14px;color:var(--gold);background:var(--navy)}
+.screen h3{margin:0 0 6px;font-family:var(--serif);font-weight:400;font-size:21px;line-height:1.15}
+.screen p{font-size:13px;line-height:1.45;color:var(--ink2)}
+.screen .go{display:inline-flex;margin:12px 0;padding:9px 20px;border-radius:999px;background:var(--navy);color:#FFFFFF;font-weight:700;text-decoration:none;font-size:15px}
+.screen .go:hover{color:#FFFFFF;background:#163266}
+.prompts{display:grid;gap:7px;text-align:left}
+.prompts span{padding:8px 10px;border-radius:11px;background:#FFFFFF;border:1px solid var(--line);font-size:12px;line-height:1.35;color:var(--navy)}
+
+/* faq */
+#faq{background:var(--tint);border-top:1px solid var(--line)}
+#faq .wrap{display:flex;flex-wrap:wrap;gap:28px 64px}
+#faq .head{flex:1 1 300px;min-width:0}
+#faq h2{font-size:clamp(34px,4vw,52px)}
+#faq .list{flex:2 1 480px;min-width:0;display:flex;flex-direction:column;gap:12px}
+#faq details{background:#FFFFFF;border:1px solid var(--line);border-radius:14px;padding:4px 22px}
+#faq summary{font-family:var(--serif);font-size:22px;padding:14px 0;min-height:44px}
+#faq details p{padding:0 0 18px;max-width:38em;color:var(--ink2)}
+
+/* closing */
+.closing .wrap{padding-block:clamp(56px,8vw,96px);display:flex;flex-wrap:wrap;align-items:center;gap:32px 64px}
+.closing .copy{flex:1 1 380px;min-width:0;display:flex;flex-direction:column;gap:16px}
+.closing .signup{flex:1 1 380px;min-width:0}
+.closing .signup input{flex-basis:220px;border-color:#FFFFFF}
+.closing .signup button{color:var(--navy);background:var(--gold)}
+.closing .signup button:hover{background:#F0C76A}
+
+/* footer */
+.foot .wrap{padding-block:40px;display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:24px 48px;font-size:16px;color:var(--ink2)}
+.foot .logo{width:180px;height:auto}
+.foot nav{display:flex;flex-wrap:wrap;gap:4px 24px;font-weight:600}
+.foot nav a{padding:10px 0}
+.foot .legal{flex:1 1 100%;display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:24px;font-size:14px}
+.foot .legal p{max-width:46em}
+
+@keyframes flicker{0%,100%{transform:scale(1,1) rotate(0)}25%{transform:scale(.88,1.14) rotate(-4deg)}50%{transform:scale(1.06,.92) rotate(3deg)}75%{transform:scale(.93,1.08) rotate(-2deg)}}
+@keyframes glow{0%,100%{opacity:.35}50%{opacity:.7}}
+@keyframes marquee{from{transform:translateX(-50%)}to{transform:translateX(0)}}
+@keyframes draw{0%{stroke-dashoffset:600}45%,100%{stroke-dashoffset:0}}
+@keyframes wave{0%,100%{transform:scaleY(.3)}50%{transform:scaleY(1)}}
+@keyframes travel{0%{top:0}90%,100%{top:100%}}
+@keyframes hop{to{transform:rotate(360deg)}}
+@keyframes growx{from{transform:scaleX(0)}to{transform:scaleX(1)}}
+@keyframes slide10{to{transform:translateX(1000%)}}
+.flame{transform-box:fill-box;transform-origin:50% 100%;animation:flicker 2s ease-in-out infinite}
+.halo{opacity:.35;animation:glow 2.2s ease-in-out infinite}
+@media (prefers-reduced-motion:reduce){*{animation:none!important}}
+</style></head><body>
+
+<header class="top"><div class="in">
+<a class="brand" href="index.html"><img src="assets/logo-mark.png" alt="" width="55" height="56"><span>RavMiz<b>AI</b></span></a>
+<nav class="mainnav" id="navLinks" aria-label="Main">
 <a href="about.html">About</a><a href="login.html">RavMizAI</a><a href="https://www.divineinformation.com/lectures" target="_blank">Lectures</a><a href="https://www.divineinformation.com/events" target="_blank">Events</a>
-</div><div class="navtools"><a class="btn btn-outline" href="login.html">Log in</a><a class="btn btn-primary" href="trial/free-trial.html">Try free</a><button class="iconbtn mobile-toggle" id="mobileToggle">☰</button></div>
-</div></nav>
-<section class="hero"><div class="wrap heroGrid">
-<div>
-<div class="eyebrow">Torah · Truth · Clarity</div>
-<h1 class="h1" style="margin-top:20px">Ask the question.<br><span class="glowword">Go deeper.</span></h1>
-<p class="p">RavMizAI turns Rabbi Yosef Mizrachi’s public Torah teachings into a direct voice-and-text conversation — available whenever you need clarity, perspective, or a place to begin.</p>
-<div style="display:flex;gap:10px;flex-wrap:wrap;margin-top:28px"><a class="btn btn-primary" href="login.html">Call RavMizAI →</a><a class="btn btn-outline" href="about.html">Meet Rabbi Mizrachi</a></div>
-<div style="display:flex;gap:12px;flex-wrap:wrap;margin-top:22px"><span class="chip">24/7 voice + text</span><span class="chip">5,000+ lectures</span><span class="chip">Torah-first guidance</span></div>
+</nav>
+<div class="navtools"><a class="btn btn-login" href="login.html">Log in</a><a class="btn pill btn-primary" href="trial/free-trial.html">Try free</a></div>
+</div></header>
+
+<main>
+<section class="hero">
+<div class="copy">
+<span class="eyebrow">Torah · Truth · Clarity</span>
+<h1>Ask the question.<br>Go deeper.</h1>
+<p class="lede muted">RavMizAI turns Rabbi Yosef Mizrachi’s public Torah teachings into a direct voice-and-text conversation — available whenever you need clarity, perspective, or a place to begin.</p>
+<form class="signup" id="start" action="trial/free-trial.html" method="get">
+<label for="hero-email">Email address</label>
+<div class="fields"><input id="hero-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required><button type="submit">Start 3-day trial</button></div>
+<span class="facts muted">24/7 voice + text · 5,000+ lectures · Torah-first guidance</span>
+</form>
+<div class="links"><a class="textlink" href="login.html">Call RavMizAI →</a><a class="textlink" href="about.html">Meet Rabbi Mizrachi</a></div>
 </div>
-<div class="phoneStage">
-<div class="phone"><div class="phoneScreen">
-<div class="phoneHeader"><span>RAVMIZAI</span><span style="color:var(--gold2)">BETA</span></div>
-<div class="phoneHero"><div class="phoneAvatar"><img src="assets/rabbi-4.jpg" alt="Rabbi Yosef Mizrachi"></div><div class="orb">✦</div><h3>Your Torah guide is ready</h3><p>Speak naturally. Ask follow-ups. Go to the source.</p><a class="btn btn-primary" href="login.html" style="min-height:44px">Begin conversation</a></div>
-<div class="phonePrompts"><div class="phonePrompt">How do I strengthen emunah?</div><div class="phonePrompt">What does real teshuvah require?</div><div class="phonePrompt">Help me understand this week’s parashah</div><div class="phonePrompt">Why is Shabbat so important?</div></div>
+<div class="hero-visual"><div class="lamp">
+<svg class="lamp-art" viewBox="0 0 520 700" aria-hidden="true">
+<circle cx="260" cy="250" r="250" fill="url(#glow)"/>
+<defs><radialGradient id="glow"><stop offset="0" stop-color="#E3B655" stop-opacity=".22"/><stop offset="1" stop-color="#E3B655" stop-opacity="0"/></radialGradient></defs>
+<g fill="none" stroke="#E3B655" stroke-width="7" stroke-linecap="round"><path d="M125 150 V300 A135 135 0 0 0 395 300 V150"/><path d="M85 150 V300 A175 175 0 0 0 435 300 V150"/><path d="M45 150 V300 A215 215 0 0 0 475 300 V150"/><path d="M260 556 V580"/><path d="M204 576 H316"/><path d="M172 594 H348" stroke-width="9"/></g>
+<g transform="translate(45 96)"><circle class="halo" cx="0" cy="18" r="20" fill="#F7D98A" style="animation-delay:-0.4s"/><path class="flame" d="M0 38 C-11 27 -6 14 0 0 C6 14 11 27 0 38Z" fill="#F7D98A" style="animation-duration:1.9s;animation-delay:-0.4s"/></g><g transform="translate(85 96)"><circle class="halo" cx="0" cy="18" r="20" fill="#F7D98A" style="animation-delay:-0.9s"/><path class="flame" d="M0 38 C-11 27 -6 14 0 0 C6 14 11 27 0 38Z" fill="#F7D98A" style="animation-duration:2.3s;animation-delay:-0.9s"/></g><g transform="translate(125 96)"><circle class="halo" cx="0" cy="18" r="20" fill="#F7D98A" style="animation-delay:-1.3s"/><path class="flame" d="M0 38 C-11 27 -6 14 0 0 C6 14 11 27 0 38Z" fill="#F7D98A" style="animation-duration:1.7s;animation-delay:-1.3s"/></g><g transform="translate(395 96)"><circle class="halo" cx="0" cy="18" r="20" fill="#F7D98A" style="animation-delay:-0.7s"/><path class="flame" d="M0 38 C-11 27 -6 14 0 0 C6 14 11 27 0 38Z" fill="#F7D98A" style="animation-duration:2.1s;animation-delay:-0.7s"/></g><g transform="translate(435 96)"><circle class="halo" cx="0" cy="18" r="20" fill="#F7D98A" style="animation-delay:-1.6s"/><path class="flame" d="M0 38 C-11 27 -6 14 0 0 C6 14 11 27 0 38Z" fill="#F7D98A" style="animation-duration:1.8s;animation-delay:-1.6s"/></g><g transform="translate(475 96)"><circle class="halo" cx="0" cy="18" r="20" fill="#F7D98A" style="animation-delay:-0.1s"/><path class="flame" d="M0 38 C-11 27 -6 14 0 0 C6 14 11 27 0 38Z" fill="#F7D98A" style="animation-duration:2.4s;animation-delay:-0.1s"/></g><g transform="translate(260 4)"><circle class="halo" cx="0" cy="18" r="20" fill="#F7D98A" style="animation-delay:-0.5s"/><path class="flame" d="M0 38 C-11 27 -6 14 0 0 C6 14 11 27 0 38Z" fill="#FFFFFF" style="animation-duration:2.0s;animation-delay:-0.5s"/></g>
+</svg>
+<div class="phone" aria-label="Preview of the RavMizAI app"><div class="screen">
+<div class="bar"><span>RAVMIZAI</span><b>BETA</b></div>
+<div class="avatar"><img src="assets/rabbi-4.jpg" alt="Rabbi Yosef Mizrachi"></div>
+<div class="spark" aria-hidden="true">✦</div>
+<h3>Your Torah guide is ready</h3>
+<p>Speak naturally. Ask follow-ups. Go to the source.</p>
+<a class="go" href="login.html">Begin conversation</a>
+<div class="prompts"><span>How do I strengthen emunah?</span><span>What does real teshuvah require?</span><span>Help me understand this week’s parashah</span></div>
 </div></div>
-<div class="floatCard"><div class="eyebrow">Built from the archive</div><strong>5,000+ lectures</strong><span style="color:#95a2b9;font-size:12px">Direct Torah teaching, events, films and digital media spanning three decades.</span></div>
+<div class="lamp-verse"><span lang="he" dir="rtl">נר ה׳ נשמת אדם</span><small>“The soul of man is the lamp of Hashem.” Proverbs 20:27</small></div>
+</div></div>
+</section>
+
+<div class="band" aria-hidden="true"><div><span>ת</span><span class="g">ש</span><span>ר</span><span>ק</span><span>צ</span><span class="g">פ</span><span>ע</span><span>ס</span><span>נ</span><span class="g">מ</span><span>ל</span><span>כ</span><span>י</span><span class="g">ט</span><span>ח</span><span>ז</span><span>ו</span><span class="g">ה</span><span>ד</span><span>ג</span><span>ב</span><span class="g">א</span><span>ת</span><span class="g">ש</span><span>ר</span><span>ק</span><span>צ</span><span class="g">פ</span><span>ע</span><span>ס</span><span>נ</span><span class="g">מ</span><span>ל</span><span>כ</span><span>י</span><span class="g">ט</span><span>ח</span><span>ז</span><span>ו</span><span class="g">ה</span><span>ד</span><span>ג</span><span>ב</span><span class="g">א</span><span>ת</span><span class="g">ש</span><span>ר</span><span>ק</span><span>צ</span><span class="g">פ</span><span>ע</span><span>ס</span><span>נ</span><span class="g">מ</span><span>ל</span><span>כ</span><span>י</span><span class="g">ט</span><span>ח</span><span>ז</span><span>ו</span><span class="g">ה</span><span>ד</span><span>ג</span><span>ב</span><span class="g">א</span><span>ת</span><span class="g">ש</span><span>ר</span><span>ק</span><span>צ</span><span class="g">פ</span><span>ע</span><span>ס</span><span>נ</span><span class="g">מ</span><span>ל</span><span>כ</span><span>י</span><span class="g">ט</span><span>ח</span><span>ז</span><span>ו</span><span class="g">ה</span><span>ד</span><span>ג</span><span>ב</span><span class="g">א</span></div></div>
+
+<div id="about"><video class="bgphoto" src="assets/rabbi-lecture.mp4" poster="assets/rabbi-lecture-poster.jpg" autoplay muted loop playsinline preload="auto" aria-hidden="true"></video>
+<section class="wrap">
+<div class="l">
+<span class="eyebrow">About Rabbi Mizrachi</span>
+<h2 class="h2">Three decades of kiruv.</h2>
+<p class="muted">Rabbi Yosef Mizrachi has spent more than three decades using direct Torah teaching, live events and digital outreach to help Jews reconnect with Torah, mitzvot and Hashem.</p>
+<a class="textlink" href="about.html">Read the story →</a>
+</div>
+<div class="r">
+<h3 class="h3">A teacher is one link in a long chain</h3>
+<p class="muted">Pirkei Avot opens by tracing how the Torah has been handed from teacher to student since Sinai. Every lecture, and every question you ask, continues that chain.</p>
+<div class="chain"><span class="dot" aria-hidden="true"></span><ol>
+<li><span class="he" lang="he" dir="rtl">סיני</span><span><strong>Sinai.</strong> The Torah is given to the Jewish people.</span></li>
+<li><span class="he" lang="he" dir="rtl">משה</span><span><strong>Moshe.</strong> Moses receives the Torah and teaches it to the nation.</span></li>
+<li><span class="he" lang="he" dir="rtl">יהושע</span><span><strong>Yehoshua.</strong> Joshua receives it from Moses.</span></li>
+<li><span class="he" lang="he" dir="rtl">זקנים</span><span><strong>The Elders.</strong> They carry it through the generations after Joshua.</span></li>
+<li><span class="he" lang="he" dir="rtl">נביאים</span><span><strong>The Prophets.</strong> They guard it and call the people back to it.</span></li>
+<li><span class="he" lang="he" dir="rtl">כנסת הגדולה</span><span><strong>The Great Assembly.</strong> Its sages pass it on with the charge to raise many students.</span></li>
+</ol></div>
+<span class="source muted">Source: Pirkei Avot 1:1</span>
+<div class="stats"><div><b>5,000+</b><span>Lectures</span></div><div><b>2M+</b><span>Monthly audience</span></div><div><b>10M+</b><span>Monthly views</span></div></div>
+</div>
+</section>
+</div>
+
+<section class="dark" id="mission"><div class="wrap">
+<div class="top-row">
+<div>
+<span class="eyebrow">What RavMizAI helps you explore</span>
+<h2 class="h2">Ancient Torah teaching. A modern conversational interface.</h2>
+<p class="muted" style="max-width:34em">Ask by voice or text about teshuvah, emunah, Jewish identity, purpose, Shabbat, mussar and the themes found throughout Rabbi Mizrachi’s public lectures.</p>
+</div>
+<svg viewBox="0 0 240 240" role="img" aria-label="A Star of David being drawn">
+<path d="M120 20 L206.6 170 L33.4 170 Z" fill="none" stroke="#E3B655" stroke-width="5" stroke-linejoin="round" style="stroke-dasharray:600;animation:draw 9s ease-in-out infinite"/>
+<path d="M120 220 L33.4 70 L206.6 70 Z" fill="none" stroke="#36C3F2" stroke-width="5" stroke-linejoin="round" style="stroke-dasharray:600;animation:draw 9s ease-in-out infinite;animation-delay:1.2s"/>
+</svg>
+</div>
+<div class="row" style="gap:32px 48px">
+<div class="pillar"><span class="he" lang="he" dir="rtl">תשובה</span><h3>Growth &amp; change</h3><p class="muted">Work through repentance, habits, mitzvot, responsibility and consistent spiritual growth.</p></div>
+<div class="pillar"><span class="he" lang="he" dir="rtl">אמונה</span><h3>Faith &amp; uncertainty</h3><p class="muted">Explore trust in Hashem, fear, gratitude, providence and how to respond to difficult periods.</p></div>
+<div class="pillar"><span class="he" lang="he" dir="rtl">תורה</span><h3>Sources &amp; meaning</h3><p class="muted">Ask about Torah themes, Jewish identity, Shabbat, purpose, mussar and related lecture topics.</p></div>
 </div>
 </div></section>
 
-<section class="section darkAlt"><div class="wrap split">
-<div><div class="eyebrow">RavMizAI</div><h2 class="h2" style="margin-top:14px">Talk it through with Torah at the center.</h2><p class="p">Ask by voice or text about teshuvah, emunah, Jewish identity, purpose, Shabbat, mussar and the themes found throughout Rabbi Mizrachi’s public lectures.</p><a class="btn btn-primary" href="login.html">Log in to RavMizAI →</a></div>
-<div class="imageCard"><img src="assets/rabbi-2.jpg" alt="Rabbi Yosef Mizrachi in studio"></div>
+<section class="wrap stack" id="offer">
+<div class="head"><span class="eyebrow">RavMizAI</span><h2 class="h2">Talk it through with Torah at the center.</h2></div>
+<div class="row">
+<article class="card navy">
+<div class="wave" aria-hidden="true"><span style="height:22px"></span><span style="height:36px;animation-delay:-.2s"></span><span style="height:48px;animation-delay:-.5s"></span><span style="height:36px;animation-delay:-.8s"></span><span style="height:22px;animation-delay:-.35s"></span></div>
+<h3 class="h3">RavMizAI</h3>
+<p class="muted">Ask by voice or text, 24/7. Speak naturally, ask follow-ups, then go to the source.</p>
+<a class="cta pill" href="login.html">Call RavMizAI →</a>
+</article>
+<article class="card">
+<div class="big">5,000+</div>
+<h3 class="h3">Lectures</h3>
+<p class="muted">Direct Torah teaching, events, films and digital media spanning three decades.</p>
+<a class="cta textlink" href="https://www.divineinformation.com/lectures" target="_blank">Browse the lectures</a>
+</article>
+<article class="card">
+<div class="tag">In person</div>
+<h3 class="h3">Live events</h3>
+<p class="muted">Hear Rabbi Mizrachi teach in person and bring your questions with you.</p>
+<a class="cta textlink" href="https://www.divineinformation.com/events" target="_blank">See upcoming events</a>
+</article>
+<article class="card">
+<div class="big">3 days</div>
+<h3 class="h3">Free trial</h3>
+<p class="muted">Create an account, verify your email, and unlock the member conversation experience.</p>
+<a class="cta textlink" href="trial/free-trial.html">Start 3-day trial →</a>
+</article>
+</div>
+</section>
+
+<section class="tinted" id="torah"><div class="wrap stack">
+<div class="head"><span class="eyebrow">Judaism in numbers</span><h2 class="h2">The framework behind every answer.</h2></div>
+<div class="row">
+<article class="card num wide">
+<div class="hd"><span class="n" style="font-size:clamp(60px,7vw,92px)">613</span><span class="he" lang="he" dir="rtl">מצוות</span></div>
+<div class="split" role="img" aria-label="Bar split into 248 positive commandments and 365 prohibitions"><div style="flex:248 1 0;background:var(--accent)">248</div><div style="flex:365 1 0;background:var(--navy)">365</div></div>
+<p class="muted"><strong>613 commandments in the Torah.</strong> The Talmud (Makkot 23b) counts 248 positive commandments and 365 prohibitions.</p>
+</article>
+<article class="card num narrow">
+<div class="dial" aria-hidden="true"><i style="transform:rotate(0.000deg) translateY(-80px)"></i><i style="transform:rotate(6.667deg) translateY(-80px)"></i><i style="transform:rotate(13.333deg) translateY(-80px)"></i><i style="transform:rotate(20.000deg) translateY(-80px)"></i><i style="transform:rotate(26.667deg) translateY(-80px)"></i><i style="transform:rotate(33.333deg) translateY(-80px)"></i><i style="transform:rotate(40.000deg) translateY(-80px)"></i><i style="transform:rotate(46.667deg) translateY(-80px)"></i><i style="transform:rotate(53.333deg) translateY(-80px)"></i><i style="transform:rotate(60.000deg) translateY(-80px)"></i><i style="transform:rotate(66.667deg) translateY(-80px)"></i><i style="transform:rotate(73.333deg) translateY(-80px)"></i><i style="transform:rotate(80.000deg) translateY(-80px)"></i><i style="transform:rotate(86.667deg) translateY(-80px)"></i><i style="transform:rotate(93.333deg) translateY(-80px)"></i><i style="transform:rotate(100.000deg) translateY(-80px)"></i><i style="transform:rotate(106.667deg) translateY(-80px)"></i><i style="transform:rotate(113.333deg) translateY(-80px)"></i><i style="transform:rotate(120.000deg) translateY(-80px)"></i><i style="transform:rotate(126.667deg) translateY(-80px)"></i><i style="transform:rotate(133.333deg) translateY(-80px)"></i><i style="transform:rotate(140.000deg) translateY(-80px)"></i><i style="transform:rotate(146.667deg) translateY(-80px)"></i><i style="transform:rotate(153.333deg) translateY(-80px)"></i><i style="transform:rotate(160.000deg) translateY(-80px)"></i><i style="transform:rotate(166.667deg) translateY(-80px)"></i><i style="transform:rotate(173.333deg) translateY(-80px)"></i><i style="transform:rotate(180.000deg) translateY(-80px)"></i><i style="transform:rotate(186.667deg) translateY(-80px)"></i><i style="transform:rotate(193.333deg) translateY(-80px)"></i><i style="transform:rotate(200.000deg) translateY(-80px)"></i><i style="transform:rotate(206.667deg) translateY(-80px)"></i><i style="transform:rotate(213.333deg) translateY(-80px)"></i><i style="transform:rotate(220.000deg) translateY(-80px)"></i><i style="transform:rotate(226.667deg) translateY(-80px)"></i><i style="transform:rotate(233.333deg) translateY(-80px)"></i><i style="transform:rotate(240.000deg) translateY(-80px)"></i><i style="transform:rotate(246.667deg) translateY(-80px)"></i><i style="transform:rotate(253.333deg) translateY(-80px)"></i><i style="transform:rotate(260.000deg) translateY(-80px)"></i><i style="transform:rotate(266.667deg) translateY(-80px)"></i><i style="transform:rotate(273.333deg) translateY(-80px)"></i><i style="transform:rotate(280.000deg) translateY(-80px)"></i><i style="transform:rotate(286.667deg) translateY(-80px)"></i><i style="transform:rotate(293.333deg) translateY(-80px)"></i><i style="transform:rotate(300.000deg) translateY(-80px)"></i><i style="transform:rotate(306.667deg) translateY(-80px)"></i><i style="transform:rotate(313.333deg) translateY(-80px)"></i><i style="transform:rotate(320.000deg) translateY(-80px)"></i><i style="transform:rotate(326.667deg) translateY(-80px)"></i><i style="transform:rotate(333.333deg) translateY(-80px)"></i><i style="transform:rotate(340.000deg) translateY(-80px)"></i><i style="transform:rotate(346.667deg) translateY(-80px)"></i><i style="transform:rotate(353.333deg) translateY(-80px)"></i><div class="hand"><span></span></div><div class="c">54</div></div>
+<p class="muted"><strong>54 weekly Torah portions.</strong> The Torah is read through once a year, and the cycle starts again on Simchat Torah.</p>
+</article>
+<article class="card num narrow">
+<div class="hd" style="align-items:flex-end"><span class="n">39</span>
+<svg viewBox="0 0 120 110" role="img" aria-label="Two Shabbat candles" style="width:120px;height:auto">
+<rect x="26" y="50" width="16" height="52" rx="3" fill="#0C2147"/><rect x="78" y="50" width="16" height="52" rx="3" fill="#0C2147"/>
+<path d="M14 104 H106" stroke="#0C2147" stroke-width="5" stroke-linecap="round" fill="none"/>
+<path class="flame" d="M34 46 C24 36 29 24 34 10 C39 24 44 36 34 46Z" fill="#D4A03A" style="animation-duration:1.9s"/>
+<path class="flame" d="M86 46 C76 36 81 24 86 10 C91 24 96 36 86 46Z" fill="#D4A03A" style="animation-duration:2.3s;animation-delay:-.7s"/>
+</svg></div>
+<p class="muted"><strong>39 categories of work rest on Shabbat.</strong> Shabbat runs from Friday at sunset to Saturday at nightfall, and is welcomed by lighting candles.</p>
+</article>
+<article class="card num wide">
+<div class="hd"><span class="n">10</span><span class="he" lang="he" dir="rtl">תשובה</span></div>
+<div aria-hidden="true" style="display:flex;flex-direction:column;gap:6px">
+<div class="days"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><i class="mark"></i></div>
+<div class="days-l"><span>Rosh Hashanah</span><span>Yom Kippur</span></div>
+</div>
+<p class="muted"><strong>Ten Days of Teshuvah.</strong> The days from Rosh Hashanah through Yom Kippur are set aside for return and repair.</p>
+</article>
+</div>
 </div></section>
 
-<section class="section lightSection"><div class="wrap">
-<div class="eyebrow" style="color:#4464d6">What RavMizAI helps you explore</div><h2 class="h2" style="margin-top:16px;max-width:780px">Ancient Torah teaching. A modern conversational interface.</h2>
-<div class="featureGrid">
-<div class="card feature"><div class="num">Teshuvah</div><h3>Growth & change</h3><p>Work through repentance, habits, mitzvot, responsibility and consistent spiritual growth.</p></div>
-<div class="card feature"><div class="num">Emunah</div><h3>Faith & uncertainty</h3><p>Explore trust in Hashem, fear, gratitude, providence and how to respond to difficult periods.</p></div>
-<div class="card feature"><div class="num">Torah</div><h3>Sources & meaning</h3><p>Ask about Torah themes, Jewish identity, Shabbat, purpose, mussar and related lecture topics.</p></div>
-</div></div></section>
-
-<section class="section"><div class="wrap split">
-<div class="imageCard"><img src="assets/rabbi-5.jpg" alt="Rabbi Yosef Mizrachi speaking"></div>
-<div><div class="eyebrow">About Rabbi Mizrachi</div><h2 class="h2" style="margin-top:14px">Three decades of kiruv.</h2><p class="p">Rabbi Yosef Mizrachi has spent more than three decades using direct Torah teaching, live events and digital outreach to help Jews reconnect with Torah, mitzvot and Hashem.</p>
-<div class="stats"><div class="stat"><b>5,000+</b><span>lectures</span></div><div class="stat"><b>2M+</b><span>monthly audience</span></div><div class="stat"><b>10M+</b><span>monthly views</span></div></div>
-<a class="btn btn-outline" style="margin-top:24px" href="about.html">Read the story →</a></div>
-</div></section>
-
-<section class="section darkAlt"><div class="wrap"><div class="eyebrow">A different way to learn</div><div class="quote" style="margin-top:20px">“Instead of searching through hours of lectures, start with one real question — then go back to the original Torah sources and teachings.”</div><div style="margin-top:28px"><a class="btn btn-primary" href="trial/free-trial.html">Start 3-day trial →</a></div></div></section>
-
-<section class="section"><div class="wrap"><div class="eyebrow">FAQ</div><h2 class="h2" style="margin-top:14px">Questions before you begin.</h2>
-<div class="faq">
-<details><summary>Is RavMizAI actually Rabbi Mizrachi?</summary><p>No. RavMizAI is an AI conversation experience built around selected public teachings, lectures and materials associated with Rabbi Yosef Mizrachi. The answers are generated by AI, not spoken live by Rabbi Mizrachi. The purpose is to make the teaching archive easier to explore conversationally, but users should still return to the original lectures and Torah sources when accuracy or context matters.</p></details>
+<section id="faq"><div class="wrap">
+<div class="head"><span class="eyebrow">FAQ</span><h2 class="h2">Questions before you begin.</h2></div>
+<div class="list">
+<details open><summary>Is RavMizAI actually Rabbi Mizrachi?</summary><p>No. RavMizAI is an AI conversation experience built around selected public teachings, lectures and materials associated with Rabbi Yosef Mizrachi. The answers are generated by AI, not spoken live by Rabbi Mizrachi. The purpose is to make the teaching archive easier to explore conversationally, but users should still return to the original lectures and Torah sources when accuracy or context matters.</p></details>
 <details><summary>Can I ask halachic questions?</summary><p>You can ask RavMizAI to explain general Torah concepts, public teachings and background around halachic topics. But it should not be treated as a posek or as a replacement for a qualified rabbi. Personal questions about Shabbat, kashrut, family matters, medical situations, business issues or any case that depends on your exact circumstances should be brought to a competent rabbi who can ask follow-up questions and give a real ruling.</p></details>
 <details><summary>What can I ask about?</summary><p>RavMizAI is intended for the kinds of subjects Rabbi Mizrachi addresses publicly: teshuvah, emunah, Shabbat, Jewish identity, purpose, free will and Divine Providence, mussar, Torah and science, parashah themes, and practical spiritual growth. You can begin in ordinary language, ask follow-up questions, request a clearer explanation, or ask where a particular idea comes from in the broader lecture archive.</p></details>
 <details><summary>Is there a free option?</summary><p>The public website is free to browse, but live RavMizAI voice and text conversations are available only after signing in. New users can start with the 3-day trial flow, which creates an account, verifies the email address and then unlocks the member conversation experience, transcripts, preferences, wallet and billing controls.</p></details>
-</div></div></section>
+</div>
+</div></section>
 
-<footer class="footer"><div class="wrap footerGrid">
-<div><a class="brand" href="index.html"><span class="brandmark">RM</span><span>RavMiz<b>AI</b></span></a><p class="p" style="font-size:13px;max-width:460px">AI Torah conversation grounded in Rabbi Yosef Mizrachi’s public teaching archive. RavMizAI is not Rabbi Mizrachi speaking live and does not replace a qualified rabbi for personal halachic rulings.</p><small>© 2026 RavMizAI. All rights reserved.</small></div>
-<div class="list"><b>Explore</b><a href="about.html">About</a><a href="login.html">Log in</a><a href="trial/free-trial.html">3-day trial</a></div>
-<div class="list"><b>Legal</b><a href="terms.html">Terms</a><a href="privacy.html">Privacy</a><a href="https://www.divineinformation.com/" target="_blank">Divine Information</a></div>
+<section class="dark closing"><div class="wrap">
+<div class="copy">
+<span class="eyebrow" style="color:var(--gold)">A different way to learn</span>
+<p class="h2" style="font-size:clamp(28px,3.2vw,42px)">“Instead of searching through hours of lectures, start with one real question — then go back to the original Torah sources and teachings.”</p>
+</div>
+<form class="signup" action="trial/free-trial.html" method="get">
+<label for="footer-email">Email address</label>
+<div class="fields"><input id="footer-email" name="email" type="email" autocomplete="email" placeholder="you@example.com" required><button type="submit">Start 3-day trial →</button></div>
+</form>
+</div></section>
+</main>
+
+<footer class="foot"><div class="wrap">
+<a href="index.html"><img class="logo" src="assets/logo-full.png" alt="RavMizAI" width="180" height="164"></a>
+<nav aria-label="Footer"><a href="about.html">About</a><a href="login.html">Log in</a><a href="trial/free-trial.html">3-day trial</a><a href="terms.html">Terms</a><a href="privacy.html">Privacy</a><a href="https://www.divineinformation.com/" target="_blank">Divine Information</a></nav>
+<div class="legal"><p>AI Torah conversation grounded in Rabbi Yosef Mizrachi’s public teaching archive. RavMizAI is not Rabbi Mizrachi speaking live and does not replace a qualified rabbi for personal halachic rulings.</p><small>© 2026 RavMizAI. All rights reserved.</small></div>
 </div></footer>
+<script>
+// Background lecture video: play it slightly slowed, and hold it on the poster frame
+// for visitors who ask for reduced motion.
+(function(){
+ var v=document.querySelector('#about video.bgphoto'); if(!v)return;
+ var slow=function(){v.defaultPlaybackRate=0.7;v.playbackRate=0.7};
+ slow(); v.addEventListener('loadedmetadata',slow); v.addEventListener('play',slow);
+ if(window.matchMedia&&matchMedia('(prefers-reduced-motion: reduce)').matches){v.removeAttribute('autoplay');v.pause()}
+})();
+</script>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><script src="assets/supabase-config.js"></script><script src="assets/auth.js"></script><script src="assets/app.js"></script></body></html>

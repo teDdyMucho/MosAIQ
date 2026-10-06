@@ -195,6 +195,9 @@ function setupVerify(){
 }
 function setupTrial(){
  const f=$('#trialSignup'); if(!f)return;
+ // The home page's email box sends visitors here as ?email=…; carry it over.
+ const pre=new URLSearchParams(location.search).get('email');
+ if(pre&&f.email&&!f.email.value)f.email.value=pre.trim().slice(0,254);
  f.addEventListener('submit',async e=>{
   e.preventDefault();clearMsg();const d=Object.fromEntries(new FormData(f));
   const first=String(d.first||'').trim(), last=String(d.last||'').trim(), email=String(d.email||'').trim();
