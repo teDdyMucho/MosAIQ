@@ -95,14 +95,22 @@
     async resend() { localStorage.setItem('rm_verify_code', '111111'); return true; },
     async signOut() { localStorage.removeItem('rm_user'); return true; },
 
-    // Offline mirror of activateTrial().
+    // Offline mirror of activateTrial(): grants the 7-day trial locally so the
+    // funnel still demos without a backend. No money is involved either way.
     async activateTrial() {
       const u = proto.read() || {};
       if (u.trialUsed) throw new Error('You have already used your free trial.');
-      const ends = Date.now() + 3 * 24 * 60 * 60 * 1000;
+      const ends = Date.now() + 7 * 24 * 60 * 60 * 1000;
       Object.assign(u, { member: true, trialUsed: true, trialStart: Date.now(), trialEnds: ends, minutes: 60, chats: 120 });
       proto.write(u);
       return { ok: true, trial_ends: new Date(ends).toISOString() };
+    },
+
+    // Offline stand-in for Stripe Checkout. There is no hosted page to send
+    // anyone to, so grant the demo trial and stay on the site.
+    async startCheckout() {
+      await proto.activateTrial();
+      return null;   // null means "no redirect; already handled"
     },
 
     // Offline mirror of the live check. `member` is set by the prototype
@@ -238,7 +246,37 @@
       return data;
     },
 
-    // Activates the one-time 3-day trial through the activate-trial Edge
+    // Starts Stripe Checkout and returns the hosted URL to redirect to.
+    // Price and trial length are set server-side, so nothing here can change
+    // what the visitor is charged.
+    async startCheckout() {
+      const { data: sess } = await sb.auth.getSession();
+      const token = sess?.session?.access_token;
+      if (!token) throw new Error('Your session has expired. Please sign in again.');
+
+      const res = await fetch(cfg.url.replace(/\/+$/, '') + '/functions/v1/create-checkout', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'apikey': cfg.anonKey,
+          'Content-Type': 'application/json'
+        },
+        body: '{}'
+      });
+
+      let body = null;
+      try { body = await res.json(); } catch (e) { /* non-JSON error page */ }
+
+      if (res.status === 404) {
+        throw new Error('Billing is not available yet. Please contact support.');
+      }
+      if (!res.ok || !body?.ok || !body?.url) {
+        throw new Error(body?.message || body?.error || 'Could not start checkout. Please try again.');
+      }
+      return body.url;
+    },
+
+    // Activates the one-time 7-day trial through the activate-trial Edge
     // Function. The browser cannot write membership itself (RLS blocks it), so
     // the grant happens server-side with the service-role key.
     async activateTrial() {
@@ -325,6 +363,7 @@
     currentUser: impl.currentUser,
     profile: impl.profile || (async () => null),
     isSubscribed: impl.isSubscribed,
+    startCheckout: impl.startCheckout,
     activateTrial: impl.activateTrial,
 
     // Gate for Call / Text. Sends a non-subscriber to the subscription page

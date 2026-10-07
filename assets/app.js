@@ -31,9 +31,9 @@ async function publicNavInit(){
   if(!isAuthLink)return;
   // Leave links that merely point at the app (e.g. "RavMizAI") alone unless
   // they are the sign-in / sign-up calls to action.
-  if(!/log ?in|sign ?up|try free|3-day trial|try ravmizai/.test(text))return;
+  if(!/log ?in|sign ?up|try free|7-day trial|try ravmizai/.test(text))return;
   a.setAttribute('href','app/home.html');
-  a.textContent=/try free|3-day trial|try ravmizai/.test(text)?label:'Go to app';
+  a.textContent=/try free|7-day trial|try ravmizai/.test(text)?label:'Go to app';
   converted.push(a);
  });
 
@@ -231,7 +231,7 @@ function setupPayment(){
   busy(f,true,'Activating…');
   try{
    await RMAuth.activateTrial();
-   localStorage.setItem('rm_activity',JSON.stringify([{title:'3-day free trial activated',date:new Date().toLocaleDateString(),amount:'$0.00'}]));
+   localStorage.setItem('rm_activity',JSON.stringify([{title:'7-day free trial started',date:new Date().toLocaleDateString(),amount:'$0.00'}]));
    if(!RMAuth.isLive){const v=getUser()||{};v.member=true;storeUser(v);}
    location.href='../app/home.html';
   }catch(err){
@@ -296,6 +296,7 @@ async function appInit(){
 
  document.body.classList.toggle('isSubscribed',subscribed);
  setupSubscribeGate(subscribed);
+ setupCheckoutButton();
  await setupBillingStatus(subscribed);
 }
 
@@ -313,6 +314,26 @@ function setupSubscribeGate(subscribed){
   a.setAttribute('href','subscribe.html');
   a.setAttribute('data-gated','1');
  });
+}
+
+// Sends the visitor to Stripe Checkout. The button is disabled while the
+// session is being created, so a double click cannot open two checkouts.
+function setupCheckoutButton(){
+ const btn=$('#startCheckout'); if(!btn)return;
+ btn.onclick=async()=>{
+  clearMsg();
+  btn.disabled=true; btn.dataset.label??=btn.textContent;
+  btn.textContent='Opening secure checkout…'; btn.style.opacity='.6'; btn.style.cursor='wait';
+  try{
+   const url=await RMAuth.startCheckout();
+   // Live: Stripe's hosted page. Offline: null, trial already granted.
+   location.href=url||'home.html';
+  }catch(err){
+   showErr(RMAuth.friendly(err));
+   btn.disabled=false; btn.textContent=btn.dataset.label;
+   btn.style.opacity=''; btn.style.cursor='';
+  }
+ };
 }
 
 // billing.html ships with a hardcoded "Membership active". Replace it with the

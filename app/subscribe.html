@@ -11,9 +11,9 @@
    <h1 class="appTitle" style="margin:14px 0 8px">Start your membership to talk with RavMizAI</h1>
    <p class="appSub" id="gateReason">Voice calls and text conversations are available to members.</p>
 
-   <div style="margin:26px 0 6px;font-size:34px;color:var(--gold2);font-weight:800">$10.00
+   <div style="margin:26px 0 6px;font-size:34px;color:var(--gold2);font-weight:800">$18.00
     <span style="font-size:12px;color:var(--muted);font-weight:600">/ month</span></div>
-   <p class="appSub" style="font-size:13px">Begins with a 3-day free trial. Cancel any time.</p>
+   <p class="appSub" style="font-size:13px">7 days free, then $18/month. Cancel anytime.</p>
 
    <div style="display:grid;gap:10px;margin:24px 0 8px;text-align:left">
     <div class="rec" style="justify-content:flex-start;gap:12px"><span style="color:var(--gold2)">☎</span><span>Unlimited voice conversations</span></div>
@@ -24,11 +24,11 @@
    <div id="formError" class="error" style="margin-top:16px"></div>
    <div id="formSuccess" class="success" style="margin-top:16px"></div>
 
-   <!-- Goes straight to payment: the visitor is already signed in, so the
-        signup form on free-trial.html would ask them to create a second
-        account. -->
-   <a class="btn btn-primary btn-full" style="margin-top:18px" href="../trial/payment.html">Start 3-day free trial →</a>
+   <!-- Hands off to Stripe Checkout. Card details are entered on Stripe's own
+        page, so they never touch this site. -->
+   <button type="button" class="btn btn-primary btn-full" style="margin-top:18px" id="startCheckout">Start 7-day free trial →</button>
    <a class="btn btn-outline btn-full" style="margin-top:10px" href="home.html">Back to home</a>
+   <p class="appSub" style="font-size:11px;margin-top:14px">Secure checkout by Stripe. You won’t be charged until your 7-day trial ends.</p>
   </section>
 
  </div>
