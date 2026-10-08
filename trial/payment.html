@@ -1,7 +1,23 @@
 <!doctype html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Activate Trial — RavMizAI</title><meta name="theme-color" content="#0C2147"><link rel="stylesheet" href="../assets/styles.css"></head><body>
-<div class="trialHero"><div class="wrap trialGrid">
+<title>Payment method — RavMizAI</title><meta name="theme-color" content="#0C2147"><link rel="stylesheet" href="../assets/styles.css"></head><body>
+<div class="trialPage"><div class="trialWrap">
 <div class="trialCopy"><a class="brand" href="../index.html"><img src="../assets/logo-mark.png" alt="" width="47" height="48"><span>RavMiz<b>AI</b></span></a><div class="eyebrow" style="margin-top:70px">Final step</div><h1>Unlock your free call.</h1><p>Your 7-day trial begins today. Add a payment method to activate member access. Cancel before the trial ends to avoid renewal.</p></div>
-<div class="card trialForm"><div class="eyebrow">Start your 7-day free trial</div><h2 class="h3" style="margin:12px 0 18px">Payment method</h2><div class="miniBenefit">7-day RavMizAI trial · sample membership price $10/month after trial · cancel anytime. Confirm final production pricing before launch.</div><div class="checkoutTabs"><div class="paytab active">Card</div><div class="paytab">Google Pay</div></div><div id="formError" class="error"></div><form id="paymentForm"><div class="field"><label>Card number</label><input class="input" name="card" placeholder="4242 4242 4242 4242" inputmode="numeric" required></div><div class="row2"><div class="field"><label>Expiration</label><input class="input" name="exp" placeholder="MM / YY" required></div><div class="field"><label>CVC</label><input class="input" name="cvc" placeholder="CVC" required></div></div><div class="field"><label>Country</label><select class="input" name="country"><option>United States</option><option>Canada</option><option>Israel</option><option>United Kingdom</option><option>Other</option></select></div><button class="btn btn-primary btn-full">Start my 7-day free trial →</button></form><div class="progressDots"><i></i><i></i><i class="on"></i></div><p style="font-size:13px;color:var(--muted);line-height:1.55">Prototype checkout. Production should use Stripe Elements or another PCI-compliant processor; do not store raw card numbers in RavMizAI.</p></div>
+<div class="card trialForm"><div class="eyebrow">Start your 7-day free trial</div><h2 class="h3" style="margin:12px 0 18px">Payment method</h2><div class="miniBenefit">7 days free, then $18/month. Cancel anytime.</div>
+<div id="formError" class="error"></div>
+
+<!-- No card fields here on purpose. Card details are entered on Stripe's own
+     hosted Checkout page, which means this site never handles them and Stripe
+     reports precise, actionable errors ("Your card was declined", "Incorrect
+     CVC") instead of the generic message a hand-rolled form can give. -->
+<div style="display:grid;gap:10px;margin:18px 0 4px;text-align:left">
+ <div class="rec" style="justify-content:flex-start;gap:12px"><span style="color:var(--gold2)">🔒</span><span>Card details are entered securely on Stripe</span></div>
+ <div class="rec" style="justify-content:flex-start;gap:12px"><span style="color:var(--gold2)">✦</span><span>You won’t be charged until your trial ends</span></div>
+ <div class="rec" style="justify-content:flex-start;gap:12px"><span style="color:var(--gold2)">✎</span><span>Change your card or cancel anytime in Billing</span></div>
+</div>
+
+<button type="button" class="btn btn-primary btn-full" id="startCheckout" style="margin-top:18px">Continue to secure checkout →</button>
+<a class="btn btn-outline btn-full" style="margin-top:10px" href="../app/home.html">Back</a>
+<div class="progressDots"><i></i><i></i><i class="on"></i></div>
+<p style="font-size:13px;color:var(--muted);line-height:1.55">Payments are processed by Stripe. RavMizAI never sees or stores your card number.</p></div>
 </div></div>
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script><script src="../assets/supabase-config.js"></script><script src="../assets/auth.js"></script><script src="../assets/app.js"></script></body></html>

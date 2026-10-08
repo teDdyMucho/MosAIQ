@@ -106,6 +106,21 @@
       return { ok: true, trial_ends: new Date(ends).toISOString() };
     },
 
+    // Offline stand-ins: no email is sent, but the prototype password changes
+    // so the flow can still be walked through.
+    async requestPasswordReset() { return true; },
+    async updatePassword(password) {
+      const u = proto.read();
+      if (!u) throw new Error('No account found on this device.');
+      u.password = password; proto.write(u);
+      return true;
+    },
+
+    // Offline stand-in: there is no hosted portal without a backend.
+    async billingPortal() {
+      throw new Error('Billing management needs the live backend.');
+    },
+
     // Offline stand-in for Stripe Checkout. There is no hosted page to send
     // anyone to, so grant the demo trial and stay on the site.
     async startCheckout() {
@@ -239,7 +254,7 @@
       if (!uid) return null;
       const { data, error } = await sb
         .from('profiles')
-        .select('first_name,last_name,call_me,is_member,subscribed_at,subscribed_until,subscription_note')
+        .select('first_name,last_name,call_me,is_member,subscribed_at,subscribed_until,subscription_note,card_brand,card_last4,subscription_status')
         .eq('id', uid)
         .maybeSingle();
       if (error) { console.warn('[RavMizAI] profile read failed:', error.message); return null; }
@@ -272,6 +287,58 @@
       }
       if (!res.ok || !body?.ok || !body?.url) {
         throw new Error(body?.message || body?.error || 'Could not start checkout. Please try again.');
+      }
+      return body.url;
+    },
+
+    // Sends a password-reset email. The caller always reports success, whether
+    // or not the address is registered -- otherwise this page becomes a way to
+    // discover which emails have accounts.
+    async requestPasswordReset(email) {
+      const { error } = await sb.auth.resetPasswordForEmail(email, {
+        redirectTo: new URL('reset-password.html', location.href).href
+      });
+      if (error && !/not found|invalid/i.test(error.message || '')) throw error;
+      return true;
+    },
+
+    // Sets the new password. Only works while the recovery link's session is
+    // active, which Supabase establishes from the token in the URL.
+    async updatePassword(password) {
+      const { data: sess } = await sb.auth.getSession();
+      if (!sess?.session) {
+        throw new Error('This reset link has expired. Please request a new one.');
+      }
+      const { error } = await sb.auth.updateUser({ password });
+      if (error) throw error;
+      return true;
+    },
+
+    // Opens Stripe's Billing Portal, where a member can change their card,
+    // view invoices and cancel. Returns the hosted URL to redirect to.
+    async billingPortal() {
+      const { data: sess } = await sb.auth.getSession();
+      const token = sess?.session?.access_token;
+      if (!token) throw new Error('Your session has expired. Please sign in again.');
+
+      const res = await fetch(cfg.url.replace(/\/+$/, '') + '/functions/v1/billing-portal', {
+        method: 'POST',
+        headers: {
+          'Authorization': 'Bearer ' + token,
+          'apikey': cfg.anonKey,
+          'Content-Type': 'application/json'
+        },
+        body: '{}'
+      });
+
+      let body = null;
+      try { body = await res.json(); } catch (e) { /* non-JSON error page */ }
+
+      if (res.status === 404) {
+        throw new Error('Billing management is not available yet. Please contact support.');
+      }
+      if (!res.ok || !body?.ok || !body?.url) {
+        throw new Error(body?.message || body?.error || 'Could not open billing. Please try again.');
       }
       return body.url;
     },
@@ -364,6 +431,9 @@
     profile: impl.profile || (async () => null),
     isSubscribed: impl.isSubscribed,
     startCheckout: impl.startCheckout,
+    billingPortal: impl.billingPortal,
+    requestPasswordReset: impl.requestPasswordReset,
+    updatePassword: impl.updatePassword,
     activateTrial: impl.activateTrial,
 
     // Gate for Call / Text. Sends a non-subscriber to the subscription page

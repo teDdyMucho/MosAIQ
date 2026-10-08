@@ -106,6 +106,21 @@ function confirmModal({title,message,confirmText='Confirm',cancelText='Cancel',d
   });
  });
 }
+// Show/hide for password fields. The input keeps focus and the caret stays put,
+// so toggling mid-typing does not interrupt anyone.
+function setupPasswordToggles(){
+ $$('.pwToggle').forEach(btn=>{
+  const input=btn.parentElement?.querySelector('input'); if(!input)return;
+  btn.onclick=()=>{
+   const shown=input.type==='text';
+   const pos=input.selectionStart;
+   input.type=shown?'password':'text';
+   btn.setAttribute('aria-pressed',String(!shown));
+   btn.setAttribute('aria-label',shown?'Show password':'Hide password');
+   try{ input.focus(); input.setSelectionRange(pos,pos); }catch(e){}
+  };
+ });
+}
 function showErr(msg,el='#formError'){const e=$(el);if(e){e.textContent=msg;e.style.display='block';}}
 function showOk(msg,el='#formSuccess'){const e=$(el);if(e){e.textContent=msg;e.style.display='block';}}
 function clearMsg(){['#formError','#formSuccess'].forEach(s=>{const e=$(s);if(e)e.style.display='none';});}
@@ -123,23 +138,47 @@ function setupSignup(formId, next='verify.html'){
   if(!first||!last||!email||!d.password)return showErr('Please complete all required fields.');
   const pwIssue=RMAuth.passwordProblem(d.password);
   if(pwIssue)return showErr(pwIssue);
+  // Only enforced when the form actually has a confirm field.
+  if(f.querySelector('[name=password2]')&&d.password!==d.password2)
+   return showErr('Passwords do not match.');
   if(!f.querySelector('[name=agree]')?.checked)return showErr('Please agree to the Terms of Service and Privacy Policy.');
   localStorage.setItem('rm_next_after_verify',d.next||'app/home.html');
   busy(f,true,'Creating account…');
   try{
    const {needsVerification}=await RMAuth.signUp({first,last,email,password:d.password});
-   if(!needsVerification){await RMAuth.syncLegacyUser();location.href=d.next||'app/home.html';return}
-   location.href=next;
+   if(needsVerification){location.href=next;return}
+   await RMAuth.syncLegacyUser();
+   // A card is required to sign up, so go straight to Stripe rather than
+   // dropping the new member on a page they cannot use yet. The trial starts
+   // at checkout and the first charge follows 7 days later.
+   await goToCheckout(f,d.next||'app/home.html');
   }catch(err){
    showErr(RMAuth.friendly(err));
    busy(f,false);
   }
  });
 }
+
+// Sends a just-registered user into Stripe Checkout. If checkout cannot be
+// started, fall back to `fallback` with an explanation instead of stranding
+// them -- the account exists either way, and the gate still protects access.
+async function goToCheckout(form,fallback){
+ try{
+  busy(form,true,'Opening secure checkout…');
+  const url=await RMAuth.startCheckout();
+  location.href=url||fallback;
+ }catch(err){
+  console.warn('[RavMizAI] checkout after signup failed:',err?.message);
+  sessionStorage.setItem('rm_checkout_error',RMAuth.friendly(err));
+  location.href=fallback;
+ }
+}
 // Disables a form's submit button while a request is in flight, so a slow
 // network can't produce duplicate signups or login attempts.
 function busy(form,on,label){
- const b=form.querySelector('button[type=submit],button:not([type])');
+ // Exclude .pwToggle: it is a type="button" inside the form and would
+ // otherwise be picked up as the submit control.
+ const b=form.querySelector('button[type=submit],button:not([type]):not(.pwToggle)');
  if(!b)return;
  if(on){b.dataset.label??=b.textContent;b.disabled=true;b.style.opacity='.6';b.style.cursor='wait';if(label)b.textContent=label;}
  else{b.disabled=false;b.style.opacity='';b.style.cursor='';if(b.dataset.label)b.textContent=b.dataset.label;}
@@ -163,6 +202,56 @@ function setupLogin(){
   }
  });
 }
+// "Forgot password" — request the reset email.
+function setupForgot(){
+ const f=$('#forgotForm'); if(!f)return;
+ f.addEventListener('submit',async e=>{
+  e.preventDefault();clearMsg();
+  const email=String(new FormData(f).get('email')||'').trim();
+  if(!email)return showErr('Enter your email address.');
+  busy(f,true,'Sending…');
+  try{
+   await RMAuth.requestPasswordReset(email);
+   // Deliberately the same message whether or not the address is registered,
+   // so this page cannot be used to find out who has an account.
+   showOk('If an account exists for '+email+', a reset link is on its way. Check your inbox and spam folder.');
+   f.reset();
+  }catch(err){ showErr(RMAuth.friendly(err)); }
+  busy(f,false);
+ });
+}
+
+// "Set a new password" — reached from the emailed link.
+function setupReset(){
+ const f=$('#resetForm'); if(!f)return;
+ // Supabase puts the recovery token in the URL fragment and exchanges it for a
+ // session. That is asynchronous, so check a moment later rather than at once.
+ if(RMAuth.isLive){
+  setTimeout(async()=>{
+   const u=await RMAuth.currentUser();
+   const note=$('#resetFor');
+   if(u&&note)note.textContent='Setting a new password for '+u.email+'.';
+   else if(!u)showErr('This reset link is invalid or has expired. Request a new one from the sign-in page.');
+  },1200);
+ }
+ f.addEventListener('submit',async e=>{
+  e.preventDefault();clearMsg();
+  const d=Object.fromEntries(new FormData(f));
+  const issue=RMAuth.passwordProblem(d.password);
+  if(issue)return showErr(issue);
+  if(d.password!==d.password2)return showErr('Passwords do not match.');
+  busy(f,true,'Saving…');
+  try{
+   await RMAuth.updatePassword(d.password);
+   showOk('Password updated. Redirecting you to sign in…');
+   setTimeout(async()=>{ await RMAuth.signOut(); location.href='login.html'; },1600);
+  }catch(err){
+   showErr(RMAuth.friendly(err));
+   busy(f,false);
+  }
+ });
+}
+
 function setupVerify(){
  const f=$('#verifyForm'); if(!f)return;
  const stored=localStorage.getItem('rm_verify_email');
@@ -178,7 +267,11 @@ function setupVerify(){
   try{
    await RMAuth.verify({code,email:stored});
    await RMAuth.syncLegacyUser();
-   location.href=localStorage.getItem('rm_next_after_verify')||'app/home.html';
+   const next=localStorage.getItem('rm_next_after_verify')||'app/home.html';
+   // With email confirmation on, this is the first moment the user has a
+   // session, so checkout happens here instead of at signup.
+   if(await RMAuth.isSubscribed()){location.href=next;return}
+   await goToCheckout(f,next);
   }catch(err){
    showErr(RMAuth.friendly(err));
    busy(f,false);
@@ -204,6 +297,8 @@ function setupTrial(){
   if(!first||!last||!email||!d.password)return showErr('Please complete all fields.');
   const pwIssue=RMAuth.passwordProblem(d.password);
   if(pwIssue)return showErr(pwIssue);
+  if(f.querySelector('[name=password2]')&&d.password!==d.password2)
+   return showErr('Passwords do not match.');
   if(!f.querySelector('[name=agree]')?.checked)return showErr('Please agree to the Terms and Privacy Policy.');
   localStorage.setItem('rm_next_after_verify','payment.html');
   busy(f,true,'Creating account…');
@@ -213,32 +308,15 @@ function setupTrial(){
   }catch(err){showErr(RMAuth.friendly(err));busy(f,false);}
  });
 }
+// The trial page no longer collects card details -- it hands off to Stripe
+// Checkout, which reports precise errors and keeps card data off this site.
+// Guard the page so a signed-out visitor is not left on a dead end.
 function setupPayment(){
- const f=$('#paymentForm'); if(!f)return;
- // Only bounce a visitor with no account at all. Someone already signed in
- // reaches this page from subscribe.html and must not be sent back to a signup
- // form that would ask them to create a second account.
+ if(!$('#startCheckout')||!/trial\//.test(location.pathname))return;
  RMAuth.currentUser().then(cu=>{ if(!cu&&!getUser()?.verified)location.href='free-trial.html'; });
- const u=getUser()||{};
- f.addEventListener('submit',async e=>{
-  e.preventDefault();clearMsg();
-  const d=Object.fromEntries(new FormData(f));
-  if(!d.card||!d.exp||!d.cvc)return showErr('Enter card details to continue.');
-
-  // Membership is granted server-side (the browser is not allowed to write it),
-  // so the card details here are never sent anywhere — there is no processor
-  // yet. Collecting them at all is a prototype affordance.
-  busy(f,true,'Activating…');
-  try{
-   await RMAuth.activateTrial();
-   localStorage.setItem('rm_activity',JSON.stringify([{title:'7-day free trial started',date:new Date().toLocaleDateString(),amount:'$0.00'}]));
-   if(!RMAuth.isLive){const v=getUser()||{};v.member=true;storeUser(v);}
-   location.href='../app/home.html';
-  }catch(err){
-   showErr(RMAuth.friendly(err));
-   busy(f,false);
-  }
- });
+ // The trial page is not an appBody page, so appInit() never runs here and the
+ // checkout button has to be wired explicitly.
+ setupCheckoutButton();
 }
 // Pages that require an active membership, not just a login. Compared without
 // the extension, since some hosts serve these as clean URLs (/app/chat).
@@ -297,7 +375,21 @@ async function appInit(){
  document.body.classList.toggle('isSubscribed',subscribed);
  setupSubscribeGate(subscribed);
  setupCheckoutButton();
+
+ // Checkout could not be opened right after signing up. Say so, rather than
+ // leaving the new member wondering why nothing was charged.
+ const pending=sessionStorage.getItem('rm_checkout_error');
+ if(pending){
+  sessionStorage.removeItem('rm_checkout_error');
+  if(!subscribed)showErr(pending);
+ }
+
+ // Returning from a cancelled Stripe checkout.
+ if(new URLSearchParams(location.search).get('checkout')==='cancelled'&&!subscribed){
+  showErr('Checkout was cancelled. Your membership has not started yet.');
+ }
  await setupBillingStatus(subscribed);
+ await setupBillingControls();
 }
 
 // Call / Text buttons: send non-members to the subscription page instead of
@@ -338,6 +430,34 @@ function setupCheckoutButton(){
 
 // billing.html ships with a hardcoded "Membership active". Replace it with the
 // real state so the page cannot claim a membership the account does not have.
+// Card summary + the buttons that open Stripe's Billing Portal.
+async function setupBillingControls(){
+ const slot=$('#cardSummary');
+ if(slot){
+  const p=await RMAuth.profile();
+  if(p?.card_last4){
+   const brand=(p.card_brand||'card').replace(/^./,c=>c.toUpperCase());
+   slot.textContent=brand+' ending in '+p.card_last4;
+  }else{
+   slot.textContent='No card on file';
+  }
+ }
+ setupBillingButtons();
+}
+function setupBillingButtons(){
+ const open=async()=>{
+  clearMsg();
+  try{
+   const url=await RMAuth.billingPortal();
+   location.href=url;
+  }catch(err){ showErr(RMAuth.friendly(err)); }
+ };
+ const btn=$('#manageBilling');
+ if(btn)btn.onclick=open;
+ const upd=$('#updateCard');
+ if(upd)upd.onclick=e=>{e.preventDefault();open();};
+}
+
 async function setupBillingStatus(subscribed){
  const head=$('#billingStatus'); if(!head)return;
  const p=await RMAuth.profile();
@@ -420,7 +540,7 @@ function setupTranscript(){
  transcript.innerHTML=sample.map(([who,msg])=>`<div class="msg ${who==='You'?'you':''}"><b>${who}</b><div class="bubble">${msg}</div></div>`).join('');
 }
 document.addEventListener('DOMContentLoaded',()=>{
- navInit();setupPrefs();setupTranscript();setupCallControls();
+ navInit();setupPrefs();setupTranscript();setupCallControls();setupPasswordToggles();
  // The auth-aware pages need assets/auth.js. Fail loudly rather than silently
  // leaving a form that looks live but does nothing.
  if(typeof RMAuth==='undefined'){
@@ -430,5 +550,5 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
   return;
  }
- setupLogin();setupSignup('#signupForm');setupVerify();setupTrial();setupPayment();appInit();publicNavInit();
+ setupForgot();setupReset();setupLogin();setupSignup('#signupForm');setupVerify();setupTrial();setupPayment();appInit();publicNavInit();
 });

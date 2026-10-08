@@ -283,3 +283,15 @@ textarea.input{height:120px;padding-top:14px}
 .control #btnPause[aria-pressed="true"]{background:#FBF4E2;color:var(--brown);border-color:#EBD39A}
 .control.end button:hover{background:#F9D7DB;border-color:#EBA0A8}
 .control button[aria-pressed="true"]+div{color:var(--navy)}
+
+/* ---- password field: show/hide toggle --------------------------------- */
+.pwWrap{position:relative}
+/* room for the button so long passwords never slide under it */
+.pwWrap .input{padding-right:46px}
+.pwToggle{position:absolute;top:0;right:0;height:52px;width:44px;display:flex;align-items:center;justify-content:center;background:none;border:0;padding:0;cursor:pointer;color:var(--muted);border-radius:0 13px 13px 0}
+.pwToggle:hover{color:var(--text)}
+.pwToggle:focus-visible{outline:2px solid var(--gold2);outline-offset:-2px}
+.pwToggle svg{width:19px;height:19px;fill:none;stroke:currentColor;stroke-width:1.7;stroke-linecap:round;stroke-linejoin:round}
+.pwToggle .eyeOff{display:none}
+.pwToggle[aria-pressed="true"] .eyeOn{display:none}
+.pwToggle[aria-pressed="true"] .eyeOff{display:block}

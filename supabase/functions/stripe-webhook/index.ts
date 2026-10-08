@@ -59,6 +59,51 @@ async function verify(body: string, header: string, secret: string): Promise<boo
 const iso = (unix: unknown) =>
   typeof unix === 'number' && unix > 0 ? new Date(unix * 1000).toISOString() : null;
 
+// Records the brand and last four digits of the card now on file, so the
+// billing page can show something real. Nothing sensitive is stored, and a
+// failure here must never fail the webhook -- the subscription state matters
+// more than the display detail.
+async function refreshCardSummary(admin: any, stripeKey: string, customerId: string) {
+  const get = (path: string) =>
+    fetch('https://api.stripe.com/v1/' + path, {
+      headers: { 'Authorization': 'Bearer ' + stripeKey },
+    }).then(r => r.json());
+
+  try {
+    let card: any = null;
+
+    // 1. The customer's default, when one is set (portal changes land here).
+    const cust = await get(
+      `customers/${customerId}?expand[]=invoice_settings.default_payment_method`,
+    );
+    card = cust?.invoice_settings?.default_payment_method?.card ?? null;
+
+    // 2. Checkout attaches the card to the subscription rather than setting a
+    //    customer default, so look there next.
+    if (!card?.last4) {
+      const subs = await get(
+        `subscriptions?customer=${customerId}&limit=1&expand[]=data.default_payment_method`,
+      );
+      card = subs?.data?.[0]?.default_payment_method?.card ?? null;
+    }
+
+    // 3. Otherwise fall back to whatever card is attached to the customer.
+    if (!card?.last4) {
+      const pms = await get(`payment_methods?customer=${customerId}&type=card&limit=1`);
+      card = pms?.data?.[0]?.card ?? null;
+    }
+
+    if (!card?.last4) return;
+    await admin.rpc('set_card_summary', {
+      p_customer_id: customerId,
+      p_brand: card.brand ?? null,
+      p_last4: card.last4,
+    });
+  } catch (e) {
+    console.warn('card summary skipped:', (e as Error).message);
+  }
+}
+
 Deno.serve(async (req) => {
   if (req.method !== 'POST') return new Response('Method not allowed', { status: 405 });
 
@@ -121,6 +166,7 @@ Deno.serve(async (req) => {
           p_period_end: iso(sub.trial_end ?? sub.current_period_end),
           p_user_id: userId,
         });
+        await refreshCardSummary(admin, stripeKey, sub.customer);
         console.log('checkout completed:', sub.id, sub.status);
         break;
       }
@@ -137,6 +183,10 @@ Deno.serve(async (req) => {
           p_period_end: iso(obj.trial_end ?? obj.current_period_end),
           p_user_id: obj.metadata?.supabase_user_id ?? null,
         });
+        // A card change in the Billing Portal arrives as subscription.updated.
+        if (!event.type.endsWith('deleted')) {
+          await refreshCardSummary(admin, stripeKey, obj.customer);
+        }
         console.log('subscription', status, obj.id);
         break;
       }
