@@ -20,22 +20,22 @@ p{margin:0}
 .he{font-family:var(--heb);font-weight:700}
 .head{display:flex;flex-direction:column;gap:12px;max-width:760px}
 .row{display:flex;flex-wrap:wrap;gap:20px}
-.pill{display:flex;align-items:center;min-height:44px;padding:10px 22px;border-radius:999px;font-weight:700;text-decoration:none}
+.pill{display:flex;align-items:center;min-height:50px;padding:12px 28px;border-radius:999px;font-weight:700;font-size:17px;text-decoration:none}
 .textlink{min-height:44px;display:flex;align-items:center;font-weight:700}
 
 /* header */
 .top{background:#FFFFFF;border-bottom:1px solid var(--line)}
-.top .in{max-width:1200px;margin:0 auto;padding:12px var(--pad);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 32px}
-.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:var(--navy);min-height:56px}
-.brand img{height:56px;width:auto}
-.brand span{font-family:var(--serif);font-size:26px;line-height:1}
+.top .in{max-width:1480px;margin:0 auto;padding:16px clamp(16px,2.6vw,40px);display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 32px}
+.brand{display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--navy);min-height:68px}
+.brand img{height:68px;width:auto}
+.brand span{font-family:var(--serif);font-size:32px;line-height:1}
 .brand b{font-weight:400;color:var(--accent)}
-.mainnav{display:flex;flex-wrap:wrap;gap:4px 28px;font-size:16px;font-weight:600}
+.mainnav{display:flex;flex-wrap:wrap;gap:4px 34px;font-size:18px;font-weight:600}
 .mainnav a{color:var(--ink2);text-decoration:none;padding:10px 0}
 .mainnav a:hover{color:var(--navy)}
-.navtools{display:flex;gap:12px;align-items:center}
+.navtools{display:flex;gap:14px;align-items:center}
 .btn{font-size:16px}
-.btn-login{color:var(--navy);text-decoration:none;font-weight:700;padding:10px 18px;min-height:44px;display:flex;align-items:center}
+.btn-login{color:var(--navy);text-decoration:none;font-weight:700;font-size:17px;padding:12px 22px;min-height:50px;display:flex;align-items:center}
 .btn-primary{background:var(--navy);color:#FFFFFF}.btn-primary:hover{color:#FFFFFF;background:#163266}
 
 /* email signup */
@@ -47,7 +47,29 @@ p{margin:0}
 .signup button:hover{background:#0F57B8}
 
 /* hero */
-.hero{max-width:1200px;margin:0 auto;padding:clamp(40px,6vw,80px) var(--pad);display:flex;flex-wrap:wrap;align-items:center;gap:40px 64px}
+/* Hero sits over a looping background video. The section is the positioning
+   context; the video is pinned behind it and an overlay keeps the navy text
+   readable over whatever frame happens to be showing. */
+.hero-stage{position:relative;isolation:isolate;overflow:hidden}
+.hero-bg{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;z-index:-2}
+/* Heavier on the left where the headline sits, clearing to the right so the
+   footage is actually visible behind the phone. */
+.hero-stage:after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(100deg,rgba(255,255,255,.86) 0%,rgba(255,255,255,.66) 38%,rgba(255,255,255,.20) 62%,rgba(255,255,255,0) 100%)}
+@media (max-width:900px){
+ /* The portrait cut is framed for this shape, so the veil can be lighter than
+    it was for the cropped landscape file. Heaviest at the top, where the
+    headline sits, clearing towards the bottom. */
+ .hero-stage:after{background:linear-gradient(180deg,rgba(255,255,255,.88) 0%,rgba(255,255,255,.74) 45%,rgba(255,255,255,.42) 100%)}
+}
+/* The footage plays for everyone. It is a slow, wide landscape shot with no
+   flashing or rapid motion, so it is not the kind of animation the
+   reduced-motion preference is meant to suppress. To honour that preference
+   anyway, add:
+     @media (prefers-reduced-motion:reduce){ .hero-bg{animation:none} }
+   and pause the element from the script below. */
+/* Wider than the 1200px content cap and with tighter side padding, so the hero
+   fills more of a large screen instead of sitting in deep margins. */
+.hero{max-width:1480px;margin:0 auto;padding:clamp(40px,6vw,80px) clamp(16px,2.6vw,40px);display:flex;flex-wrap:wrap;align-items:center;gap:40px 64px}
 .hero .copy{flex:999 1 480px;min-width:0;display:flex;flex-direction:column;gap:24px}
 .hero h1{margin:0;font-family:var(--serif);font-weight:400;font-size:clamp(42px,5.8vw,80px);line-height:1.04;letter-spacing:-.01em;text-wrap:balance}
 .hero .lede{max-width:34em;font-size:clamp(18px,1.5vw,21px)}
@@ -126,24 +148,47 @@ p{margin:0}
 /* hero visual: the phone is the menorah's centre lamp; its arms curve out from behind it.
    Drawn at a fixed 520×700 and scaled down as one piece on narrow screens. */
 .hero-visual{flex:0 1 520px;min-width:0;margin:0 auto;display:flex;justify-content:center}
-.lamp{position:relative;width:520px;height:700px;flex:none;border-radius:28px;background:radial-gradient(120% 90% at 50% 0%,#17306A 0%,var(--navy) 60%);box-shadow:0 30px 70px rgba(12,33,71,.25);overflow:hidden}
-.lamp-art{position:absolute;inset:0;width:100%;height:100%}
-.phone{position:absolute;left:145px;top:56px;width:230px;height:500px;border-radius:38px;padding:8px;background:linear-gradient(145deg,#24365F,#0A1330 55%,#1B2A4E);
+/* The phone now stands on its own: no navy panel behind it, so it is laid out
+   in flow rather than absolutely positioned inside one. */
+.lamp{position:relative;display:flex;justify-content:center;flex:none}
+.phone{position:relative;width:320px;height:696px;border-radius:50px;padding:10px;background:linear-gradient(145deg,#24365F,#0A1330 55%,#1B2A4E);
  box-shadow:inset 0 0 0 1px rgba(255,255,255,.18),0 24px 50px rgba(0,0,0,.4),0 0 0 6px rgba(227,182,85,.12)}
-.phone:before{content:"";position:absolute;z-index:2;top:16px;left:50%;transform:translateX(-50%);width:70px;height:20px;border-radius:20px;background:#05070D}
+.phone:before{content:"";position:absolute;z-index:2;top:18px;left:50%;transform:translateX(-50%);width:82px;height:23px;border-radius:23px;background:#05070D}
 .phone .screen{height:100%}
-.lamp-verse{position:absolute;left:0;right:0;bottom:26px;display:flex;flex-direction:column;align-items:center;gap:2px;text-align:center;padding:0 24px}
-.lamp-verse span{font-family:var(--heb);font-weight:500;font-size:28px;line-height:1.3;color:var(--gold)}
-.lamp-verse small{font-size:15px;color:var(--soft)}
 @media (max-width:600px){
- .hero-visual{flex-basis:100%;height:476px}
- .lamp{transform:scale(.68);transform-origin:top center}
+ /* Centred header: logo on its own line above the nav. The Log in / Try free
+    buttons are dropped here -- the hero's own CTA covers signup, and the nav
+    still reaches the login page. */
+ .top .in{flex-direction:column;justify-content:center;gap:10px}
+ .top .brand{justify-content:center}
+ .mainnav{justify-content:center;width:100%}
+ .navtools{display:none}
+
+ /* "Call RavMizAI" duplicates the nav and the hero CTA, so only the About
+    link is kept here -- centred, since it is now on its own. */
+ .hero .links{justify-content:center;margin-top:4px}
+ .hero .links a:first-child{display:none}
+
+ /* Label and button centre; the field keeps full width. A column flex box
+    would stretch the input to fill the row, so pin its height explicitly. */
+ .hero .signup label{text-align:center}
+ .hero .signup .fields{flex-direction:column;align-items:stretch}
+ .hero .signup input{flex:0 0 auto;height:54px}
+ .hero .signup button{align-self:center;flex:0 0 auto;height:54px;padding-left:40px;padding-right:40px}
+
+ .hero-visual{flex-basis:100%}
+ /* Stacked layout: give the phone room above and below so it does not crowd
+    the copy or sit flush against the Hebrew band below the hero. */
+ .hero{gap:28px;padding-bottom:76px}
+ .hero-visual{margin-top:4px}
+ .phone{width:258px;height:562px;border-radius:42px}
+ .phone .screen{border-radius:33px}
 }
 @media (max-width:400px){
- .hero-visual{height:420px}
- .lamp{transform:scale(.6)}
+ .phone{width:232px;height:505px;border-radius:38px}
+ .phone .screen{border-radius:29px}
 }
-.screen{border-radius:31px;overflow:hidden;background:linear-gradient(180deg,#FFFFFF 0%,#F3F6FB 100%);color:var(--navy);padding:50px 12px 14px;text-align:center}
+.screen{border-radius:40px;overflow:hidden;background:linear-gradient(180deg,#FFFFFF 0%,#F3F6FB 100%);color:var(--navy);padding:50px 12px 14px;text-align:center}
 .screen .bar{display:flex;justify-content:space-between;font-size:10px;font-weight:700;letter-spacing:.1em;margin:-28px 6px 20px;color:var(--navy)}
 .screen .bar b{color:var(--brown);font-weight:700}
 .avatar{width:84px;height:84px;margin:0 auto 12px;border-radius:50%;overflow:hidden;border:3px solid var(--gold-d);box-shadow:0 0 0 8px rgba(212,160,58,.14)}
@@ -205,6 +250,49 @@ p{margin:0}
 </div></header>
 
 <main>
+<div class="hero-stage">
+<!-- Two cuts of the same footage. The portrait file is framed for narrow
+     screens, where the landscape one would be cropped to a thin slice.
+     Chrome/Safari pick the first matching <source>, so the portrait entry
+     comes first and is gated by the media query. -->
+<video class="hero-bg" autoplay muted loop playsinline preload="auto" aria-hidden="true">
+<source src="assets/portrait.mp4" media="(max-width:900px)" type="video/mp4">
+<source src="assets/jerusalem-dawn.mp4" type="video/mp4">
+</video>
+<script>
+// Keep the hero footage playing. Browsers block autoplay in some states, so
+// nudge it if the element comes back paused.
+(function(){
+ try{
+  var v=document.querySelector('.hero-bg'); if(!v)return;
+  var play=function(){ var p=v.play(); if(p&&p.catch)p.catch(function(){}); };
+  play();
+  v.addEventListener('loadeddata',play);
+  v.addEventListener('canplay',play);
+  // Browsers suspend background video on a hidden tab; resume on return.
+  document.addEventListener('visibilitychange',function(){ if(!document.hidden)play(); });
+
+  // <source media> is only evaluated when the element first loads, so a resize
+  // or a device rotation would otherwise keep the wrong cut. Re-pick on change.
+  if(window.matchMedia){
+   var mq=matchMedia('(max-width:900px)');
+   var swap=function(){
+    var want=mq.matches?'assets/portrait.mp4':'assets/jerusalem-dawn.mp4';
+    if(v.currentSrc && v.currentSrc.indexOf(want)>-1)return;
+    var at=v.currentTime||0;
+    v.load();                       // re-evaluates the <source> list
+    v.addEventListener('loadeddata',function once(){
+     v.removeEventListener('loadeddata',once);
+     try{ v.currentTime=at % (v.duration||1); }catch(e){}
+     play();
+    });
+   };
+   if(mq.addEventListener)mq.addEventListener('change',swap);
+   else if(mq.addListener)mq.addListener(swap);
+  }
+ }catch(e){}
+})();
+</script>
 <section class="hero">
 <div class="copy">
 <span class="eyebrow">Torah · Truth · Clarity</span>
@@ -218,12 +306,7 @@ p{margin:0}
 <div class="links"><a class="textlink" href="login.html">Call RavMizAI →</a><a class="textlink" href="about.html">Meet Rabbi Mizrachi</a></div>
 </div>
 <div class="hero-visual"><div class="lamp">
-<svg class="lamp-art" viewBox="0 0 520 700" aria-hidden="true">
-<circle cx="260" cy="250" r="250" fill="url(#glow)"/>
-<defs><radialGradient id="glow"><stop offset="0" stop-color="#E3B655" stop-opacity=".22"/><stop offset="1" stop-color="#E3B655" stop-opacity="0"/></radialGradient></defs>
-<g fill="none" stroke="#E3B655" stroke-width="7" stroke-linecap="round"><path d="M125 150 V300 A135 135 0 0 0 395 300 V150"/><path d="M85 150 V300 A175 175 0 0 0 435 300 V150"/><path d="M45 150 V300 A215 215 0 0 0 475 300 V150"/><path d="M260 556 V580"/><path d="M204 576 H316"/><path d="M172 594 H348" stroke-width="9"/></g>
-<g transform="translate(45 96)"><circle class="halo" cx="0" cy="18" r="20" fill="#F7D98A" style="animation-delay:-0.4s"/><path class="flame" d="M0 38 C-11 27 -6 14 0 0 C6 14 11 27 0 38Z" fill="#F7D98A" style="animation-duration:1.9s;animation-delay:-0.4s"/></g><g transform="translate(85 96)"><circle class="halo" cx="0" cy="18" r="20" fill="#F7D98A" style="animation-delay:-0.9s"/><path class="flame" d="M0 38 C-11 27 -6 14 0 0 C6 14 11 27 0 38Z" fill="#F7D98A" style="animation-duration:2.3s;animation-delay:-0.9s"/></g><g transform="translate(125 96)"><circle class="halo" cx="0" cy="18" r="20" fill="#F7D98A" style="animation-delay:-1.3s"/><path class="flame" d="M0 38 C-11 27 -6 14 0 0 C6 14 11 27 0 38Z" fill="#F7D98A" style="animation-duration:1.7s;animation-delay:-1.3s"/></g><g transform="translate(395 96)"><circle class="halo" cx="0" cy="18" r="20" fill="#F7D98A" style="animation-delay:-0.7s"/><path class="flame" d="M0 38 C-11 27 -6 14 0 0 C6 14 11 27 0 38Z" fill="#F7D98A" style="animation-duration:2.1s;animation-delay:-0.7s"/></g><g transform="translate(435 96)"><circle class="halo" cx="0" cy="18" r="20" fill="#F7D98A" style="animation-delay:-1.6s"/><path class="flame" d="M0 38 C-11 27 -6 14 0 0 C6 14 11 27 0 38Z" fill="#F7D98A" style="animation-duration:1.8s;animation-delay:-1.6s"/></g><g transform="translate(475 96)"><circle class="halo" cx="0" cy="18" r="20" fill="#F7D98A" style="animation-delay:-0.1s"/><path class="flame" d="M0 38 C-11 27 -6 14 0 0 C6 14 11 27 0 38Z" fill="#F7D98A" style="animation-duration:2.4s;animation-delay:-0.1s"/></g><g transform="translate(260 4)"><circle class="halo" cx="0" cy="18" r="20" fill="#F7D98A" style="animation-delay:-0.5s"/><path class="flame" d="M0 38 C-11 27 -6 14 0 0 C6 14 11 27 0 38Z" fill="#FFFFFF" style="animation-duration:2.0s;animation-delay:-0.5s"/></g>
-</svg>
+
 <div class="phone" aria-label="Preview of the RavMizAI app"><div class="screen">
 <div class="bar"><span>RAVMIZAI</span><b>BETA</b></div>
 <div class="avatar"><img src="assets/rabbi-4.jpg" alt="Rabbi Yosef Mizrachi"></div>
@@ -233,9 +316,10 @@ p{margin:0}
 <a class="go" href="login.html">Begin conversation</a>
 <div class="prompts"><span>How do I strengthen emunah?</span><span>What does real teshuvah require?</span><span>Help me understand this week’s parashah</span></div>
 </div></div>
-<div class="lamp-verse"><span lang="he" dir="rtl">נר ה׳ נשמת אדם</span><small>“The soul of man is the lamp of Hashem.” Proverbs 20:27</small></div>
+
 </div></div>
 </section>
+</div>
 
 <div class="band" aria-hidden="true"><div><span>ת</span><span class="g">ש</span><span>ר</span><span>ק</span><span>צ</span><span class="g">פ</span><span>ע</span><span>ס</span><span>נ</span><span class="g">מ</span><span>ל</span><span>כ</span><span>י</span><span class="g">ט</span><span>ח</span><span>ז</span><span>ו</span><span class="g">ה</span><span>ד</span><span>ג</span><span>ב</span><span class="g">א</span><span>ת</span><span class="g">ש</span><span>ר</span><span>ק</span><span>צ</span><span class="g">פ</span><span>ע</span><span>ס</span><span>נ</span><span class="g">מ</span><span>ל</span><span>כ</span><span>י</span><span class="g">ט</span><span>ח</span><span>ז</span><span>ו</span><span class="g">ה</span><span>ד</span><span>ג</span><span>ב</span><span class="g">א</span><span>ת</span><span class="g">ש</span><span>ר</span><span>ק</span><span>צ</span><span class="g">פ</span><span>ע</span><span>ס</span><span>נ</span><span class="g">מ</span><span>ל</span><span>כ</span><span>י</span><span class="g">ט</span><span>ח</span><span>ז</span><span>ו</span><span class="g">ה</span><span>ד</span><span>ג</span><span>ב</span><span class="g">א</span><span>ת</span><span class="g">ש</span><span>ר</span><span>ק</span><span>צ</span><span class="g">פ</span><span>ע</span><span>ס</span><span>נ</span><span class="g">מ</span><span>ל</span><span>כ</span><span>י</span><span class="g">ט</span><span>ח</span><span>ז</span><span>ו</span><span class="g">ה</span><span>ד</span><span>ג</span><span>ב</span><span class="g">א</span></div></div>
 
