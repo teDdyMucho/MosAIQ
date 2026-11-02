@@ -56,10 +56,15 @@ p{margin:0}
    footage is actually visible behind the phone. */
 .hero-stage:after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(100deg,rgba(255,255,255,.86) 0%,rgba(255,255,255,.66) 38%,rgba(255,255,255,.20) 62%,rgba(255,255,255,0) 100%)}
 @media (max-width:900px){
- /* The portrait cut is framed for this shape, so the veil can be lighter than
-    it was for the cropped landscape file. Heaviest at the top, where the
-    headline sits, clearing towards the bottom. */
- .hero-stage:after{background:linear-gradient(180deg,rgba(255,255,255,.88) 0%,rgba(255,255,255,.74) 45%,rgba(255,255,255,.42) 100%)}
+ /* On narrow screens the stage holds the copy AND the phone mockup, well over
+    a screen tall, and the portrait cut is only 360x640. Covering all of it
+    blew the footage up past 2x, so the text sat on hazy sky under a heavy
+    white veil and the video was barely visible. Size it to one screen
+    instead, fade it out behind the phone, and keep the veil light -- a white
+    glow on the copy carries legibility over the busier frames. */
+ .hero-bg{height:min(100%,100vh);height:min(100%,100svh);-webkit-mask-image:linear-gradient(180deg,#000 70%,transparent 100%);mask-image:linear-gradient(180deg,#000 70%,transparent 100%)}
+ .hero-stage:after{bottom:auto;height:min(100%,100vh);height:min(100%,100svh);background:linear-gradient(180deg,rgba(255,255,255,.58) 0%,rgba(255,255,255,.36) 45%,rgba(255,255,255,.10) 80%,rgba(255,255,255,0) 100%)}
+ .hero .copy{text-shadow:0 0 22px rgba(255,255,255,.9),0 0 2px rgba(255,255,255,.6)}
 }
 /* The footage plays for everyone. It is a slow, wide landscape shot with no
    flashing or rapid motion, so it is not the kind of animation the
@@ -156,13 +161,8 @@ p{margin:0}
 .phone:before{content:"";position:absolute;z-index:2;top:18px;left:50%;transform:translateX(-50%);width:82px;height:23px;border-radius:23px;background:#05070D}
 .phone .screen{height:100%}
 @media (max-width:600px){
- /* Centred header: logo on its own line above the nav. The Log in / Try free
-    buttons are dropped here -- the hero's own CTA covers signup, and the nav
-    still reaches the login page. */
- .top .in{flex-direction:column;justify-content:center;gap:10px}
- .top .brand{justify-content:center}
- .mainnav{justify-content:center;width:100%}
- .navtools{display:none}
+ /* The mobile header (menu button | logo | Sign in) is in
+    assets/site-common.css, shared with the other public pages. */
 
  /* "Call RavMizAI" duplicates the nav and the hero CTA, so only the About
     link is kept here -- centred, since it is now on its own. */
@@ -224,6 +224,7 @@ p{margin:0}
 .foot .logo{width:180px;height:auto}
 .foot nav{display:flex;flex-wrap:wrap;gap:4px 24px;font-weight:600}
 .foot nav a{padding:10px 0}
+.foot .footlinks{display:flex;flex-direction:column;align-items:flex-start;gap:4px}
 .foot .legal{flex:1 1 100%;display:flex;flex-direction:column;gap:6px;border-top:1px solid var(--line);padding-top:24px;font-size:14px}
 .foot .legal p{max-width:46em}
 
@@ -239,15 +240,29 @@ p{margin:0}
 .flame{transform-box:fill-box;transform-origin:50% 100%;animation:flicker 2s ease-in-out infinite}
 .halo{opacity:.35;animation:glow 2.2s ease-in-out infinite}
 @media (prefers-reduced-motion:reduce){*{animation:none!important}}
-</style></head><body>
+</style><link rel="stylesheet" href="assets/site-common.css"></head><body>
 
-<header class="top"><div class="in">
+<header class="top"><div class="in siteHead">
+<button class="menuBtn" id="menuOpen" type="button" aria-label="Open menu" aria-controls="siteMenu" aria-expanded="false"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3 6h18M3 12h18M3 18h18"/></svg></button>
 <a class="brand" href="index.html"><img src="assets/logo-mark.png" alt="" width="55" height="56"><span>RavMiz<b>AI</b></span></a>
 <nav class="mainnav" id="navLinks" aria-label="Main">
 <a href="about.html">About</a><a href="login.html">RavMizAI</a><a href="https://www.divineinformation.com/lectures" target="_blank">Lectures</a><a href="https://www.divineinformation.com/events" target="_blank">Events</a>
 </nav>
 <div class="navtools"><a class="btn btn-login" href="login.html">Log in</a><a class="btn pill btn-primary" href="trial/free-trial.html">Try free</a></div>
+<a class="signinLink" href="login.html">Sign in</a>
 </div></header>
+
+<div class="siteMenu" id="siteMenu" role="dialog" aria-modal="true" aria-label="Menu" hidden>
+<button class="siteMenu-close" type="button" aria-label="Close menu"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+<nav aria-label="Menu">
+<a href="login.html">Log in</a>
+<a href="trial/free-trial.html" data-auth-href="app/billing.html">Membership</a>
+<a href="lets-chat.html">Rav Miz AI</a>
+<a href="about.html">About</a>
+<a href="https://www.divineinformation.com/lectures" target="_blank" rel="noopener">Lectures</a>
+<a href="https://www.divineinformation.com/events" target="_blank" rel="noopener">Events</a>
+</nav>
+</div>
 
 <main>
 <div class="hero-stage">
@@ -265,6 +280,11 @@ p{margin:0}
 (function(){
  try{
   var v=document.querySelector('.hero-bg'); if(!v)return;
+  var mq=window.matchMedia?matchMedia('(max-width:900px)'):null;
+  // A still of the opening frame, matched to the cut, so there is a picture
+  // while the video loads -- and when it never autoplays at all.
+  var poster=function(){ v.poster=(mq&&mq.matches)?'assets/hero-poster-portrait.jpg':'assets/hero-poster.jpg'; };
+  poster();
   var play=function(){ var p=v.play(); if(p&&p.catch)p.catch(function(){}); };
   play();
   v.addEventListener('loadeddata',play);
@@ -272,14 +292,22 @@ p{margin:0}
   // Browsers suspend background video on a hidden tab; resume on return.
   document.addEventListener('visibilitychange',function(){ if(!document.hidden)play(); });
 
+  // iOS Low Power Mode and data-saver settings refuse autoplay but allow play()
+  // inside a user gesture, so start the footage on the first tap, click or key.
+  var gestures=['touchend','click','keydown'];
+  var stop=function(){ gestures.forEach(function(t){ window.removeEventListener(t,kick,true); }); };
+  var kick=function(){ if(v.paused)play(); else stop(); };
+  gestures.forEach(function(t){ window.addEventListener(t,kick,true); });
+  v.addEventListener('playing',stop);
+
   // <source media> is only evaluated when the element first loads, so a resize
   // or a device rotation would otherwise keep the wrong cut. Re-pick on change.
-  if(window.matchMedia){
-   var mq=matchMedia('(max-width:900px)');
+  if(mq){
    var swap=function(){
     var want=mq.matches?'assets/portrait.mp4':'assets/jerusalem-dawn.mp4';
     if(v.currentSrc && v.currentSrc.indexOf(want)>-1)return;
     var at=v.currentTime||0;
+    poster();
     v.load();                       // re-evaluates the <source> list
     v.addEventListener('loadeddata',function once(){
      v.removeEventListener('loadeddata',once);
@@ -454,7 +482,15 @@ p{margin:0}
 
 <footer class="foot"><div class="wrap">
 <a href="index.html"><img class="logo" src="assets/logo-full.png" alt="RavMizAI" width="180" height="164"></a>
+<div class="footlinks">
+<ul class="social" aria-label="Rabbi Mizrachi on social media">
+<li><a href="https://link.me/rabbiyosefmizrachi" target="_blank" rel="noopener" aria-label="Rabbi Mizrachi on Linkme" title="Linkme"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg></a></li>
+<li><a href="https://www.instagram.com/rabbimizrachi" target="_blank" rel="noopener" aria-label="Rabbi Mizrachi on Instagram" title="Instagram"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1 1 12.63 8 4 4 0 0 1 16 11.37z"/><path d="M17.5 6.5h.01"/></svg></a></li>
+<li><a href="https://www.facebook.com/RabbiYosefMizrachi" target="_blank" rel="noopener" aria-label="Rabbi Mizrachi on Facebook" title="Facebook"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 2h-3a5 5 0 0 0-5 5v3H7v4h3v8h4v-8h3l1-4h-4V7a1 1 0 0 1 1-1h3z"/></svg></a></li>
+<li><a href="https://www.youtube.com/@RabbiYosefMizrachi" target="_blank" rel="noopener" aria-label="Rabbi Mizrachi on YouTube" title="YouTube"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22.54 6.42a2.78 2.78 0 0 0-1.94-2C18.88 4 12 4 12 4s-6.88 0-8.6.46a2.78 2.78 0 0 0-1.94 2A29 29 0 0 0 1 11.75a29 29 0 0 0 .46 5.33A2.78 2.78 0 0 0 3.4 19c1.72.46 8.6.46 8.6.46s6.88 0 8.6-.46a2.78 2.78 0 0 0 1.94-2 29 29 0 0 0 .46-5.25 29 29 0 0 0-.46-5.33z"/><path d="M9.75 15.02l5.75-3.27-5.75-3.27v6.54z"/></svg></a></li>
+</ul>
 <nav aria-label="Footer"><a href="about.html">About</a><a href="login.html">Log in</a><a href="trial/free-trial.html">7-day trial</a><a href="terms.html">Terms</a><a href="privacy.html">Privacy</a><a href="https://www.divineinformation.com/" target="_blank">Divine Information</a></nav>
+</div>
 <div class="legal"><p>AI Torah conversation grounded in Rabbi Yosef Mizrachi’s public teaching archive. RavMizAI is not Rabbi Mizrachi speaking live and does not replace a qualified rabbi for personal halachic rulings.</p><small>© 2026 RavMizAI. All rights reserved.</small></div>
 </div></footer>
 <script>

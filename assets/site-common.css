@@ -1,0 +1,58 @@
+/* RavMizAI — chrome shared by the public pages (index, about, lets-chat):
+   the mobile header, the full-screen menu, and the footer social links.
+
+   index.html carries its own inline stylesheet and does not load styles.css,
+   so these rules live here instead of in either one. Link this file AFTER the
+   page's main styles: a few rules below win on source order. */
+
+/* ---- header ------------------------------------------------------------ */
+/* Desktop keeps its nav as it was; the menu button and the "Sign in" link
+   only appear on narrow screens. */
+.menuBtn,.signinLink{display:none}
+
+@media (max-width:900px){
+ /* ☰ | logo | Sign in. The desktop links move into the menu. Up to 900px,
+    because between phone and desktop widths the full nav wrapped onto two
+    rows. */
+ .siteHead.siteHead{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px}
+ .siteHead.siteHead>.mainnav,.siteHead.siteHead>.navlinks,.siteHead.siteHead>.navtools{display:none}
+ .siteHead .menuBtn{justify-self:start;display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;margin-left:-10px;padding:0;border:0;border-radius:10px;background:none;color:var(--navy,#0C2147);cursor:pointer}
+ .siteHead .menuBtn svg{width:26px;height:26px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+ .siteHead.siteHead .brand{justify-self:center;gap:10px;min-height:0}
+ .siteHead.siteHead .brand img{height:44px;width:auto}
+ .siteHead.siteHead .brand span{font-size:24px}
+ .siteHead .signinLink{justify-self:end;display:inline-flex;align-items:center;min-height:44px;font-size:16px;font-weight:700;color:var(--navy,#0C2147);text-decoration:none;white-space:nowrap}
+ .siteHead .signinLink:hover{color:var(--accent,#1668D6)}
+}
+@media (max-width:360px){
+ .siteHead.siteHead .brand img{height:38px}
+ .siteHead.siteHead .brand span{font-size:21px}
+ .siteHead .signinLink{font-size:15px}
+}
+
+/* ---- full-screen menu -------------------------------------------------- */
+/* A white sheet over the page: close button top right, the links as a plain
+   uppercase list. Lives outside the header on purpose -- the sticky header on
+   about/lets-chat uses backdrop-filter, which would trap a fixed child. */
+.siteMenu{position:fixed;inset:0;z-index:1000;overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:#FFFFFF;color:var(--navy,#0C2147);padding:max(16px,env(safe-area-inset-top)) clamp(20px,6vw,40px) calc(40px + env(safe-area-inset-bottom))}
+.siteMenu[hidden]{display:none}
+.siteMenu.isOpen{animation:siteMenuIn .18s ease-out}
+.siteMenu-close{display:flex;align-items:center;justify-content:center;width:44px;height:44px;margin:0 -10px 0 auto;padding:0;border:0;border-radius:10px;background:none;color:inherit;cursor:pointer}
+.siteMenu-close svg{width:24px;height:24px;fill:none;stroke:currentColor;stroke-width:2;stroke-linecap:round}
+.siteMenu nav{display:flex;flex-direction:column;align-items:flex-start;margin-top:36px}
+.siteMenu nav a{display:block;padding:13px 0;font-family:'Assistant','Segoe UI',Helvetica,sans-serif;font-size:21px;font-weight:600;line-height:1.2;letter-spacing:.05em;text-transform:uppercase;color:inherit;text-decoration:none}
+.siteMenu nav a:hover{color:var(--accent,#1668D6)}
+.siteMenu a:focus-visible,.siteMenu button:focus-visible,.menuBtn:focus-visible{outline:3px solid var(--gold-d,#D4A03A);outline-offset:3px}
+html.menuOpen,html.menuOpen body{overflow:hidden}
+@keyframes siteMenuIn{from{opacity:0}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.siteMenu.isOpen{animation:none}}
+
+/* ---- footer social links ----------------------------------------------- */
+.social{display:flex;flex-wrap:wrap;gap:4px;margin:0;padding:0;list-style:none}
+/* 44px targets around a 22px glyph; the negative margin lines the first glyph
+   up with the text above and below it. */
+.social{margin-left:-11px}
+.social a{display:inline-flex;align-items:center;justify-content:center;width:44px;height:44px;border-radius:999px;color:var(--navy,#0C2147);text-decoration:none;transition:background .15s,color .15s}
+.social a:hover{background:var(--tint,#F3F6FB);color:var(--accent,#1668D6)}
+.social svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.footer .social{margin-top:6px;margin-bottom:10px}

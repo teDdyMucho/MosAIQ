@@ -128,5 +128,6 @@ These are unchanged from the main README and are **not** covered by this pass:
    browser `select` but no `insert`/`update` on `trials`, `wallets` or
    `wallet_ledger` — write those from a Stripe webhook or metering job using the
    service-role key.
-4. **Google sign-in is disabled.** The buttons are greyed out; enable the
-   provider in Supabase and wire `signInWithOAuth` to turn them on.
+4. **Google sign-in** is wired in the front end (`signInWithOAuth`) but needs
+   the Google provider switched on in Supabase, and `006_oauth_profile_names.sql`
+   run so Google members get their real name. Steps: `DEPLOY.md` §6.

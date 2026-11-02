@@ -1,8 +1,48 @@
 
 const $=(q,ctx=document)=>ctx.querySelector(q), $$=(q,ctx=document)=>[...ctx.querySelectorAll(q)];
+// Site root, from where this script was loaded (…/assets/app.js), so a link
+// built here is right from any page depth.
+const SITE_ROOT=(()=>{try{return new URL('../',document.currentScript.src).href}catch(e){return location.origin+'/'}})();
+// Public pages: the full-screen menu behind the ☰ button, which only shows on
+// narrow screens (assets/site-common.css). Behaves as a modal dialog: focus
+// moves in and stays in, Escape closes it, and focus returns to the button.
 function navInit(){
- const t=$('#mobileToggle'), n=$('#navLinks'); if(t&&n)t.onclick=()=>n.classList.toggle('open');
- $$('#navLinks a').forEach(a=>a.addEventListener('click',()=>n?.classList.remove('open')));
+ const btn=$('#menuOpen'), menu=$('#siteMenu'); if(!btn||!menu)return;
+ const closeBtn=menu.querySelector('.siteMenu-close');
+ const onKey=e=>{
+  if(e.key==='Escape'){e.preventDefault();close();return}
+  if(e.key!=='Tab')return;
+  const f=$$('a[href],button',menu); if(!f.length)return;
+  const first=f[0], last=f[f.length-1];
+  if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+ };
+ const open=()=>{
+  menu.hidden=false; menu.classList.add('isOpen');
+  document.documentElement.classList.add('menuOpen');
+  btn.setAttribute('aria-expanded','true');
+  document.addEventListener('keydown',onKey,true);
+  closeBtn?.focus();
+ };
+ const close=(restoreFocus=true)=>{
+  if(menu.hidden)return;
+  menu.hidden=true; menu.classList.remove('isOpen');
+  document.documentElement.classList.remove('menuOpen');
+  btn.setAttribute('aria-expanded','false');
+  document.removeEventListener('keydown',onKey,true);
+  if(restoreFocus)try{btn.focus()}catch(e){}
+ };
+ btn.addEventListener('click',open);
+ closeBtn?.addEventListener('click',()=>close());
+ // Following a link closes the menu, so Back does not land on it still open.
+ $$('a',menu).forEach(a=>a.addEventListener('click',()=>close(false)));
+ // Widening past the breakpoint hides the ☰ button; do not leave the sheet up.
+ if(window.matchMedia){
+  const mq=matchMedia('(max-width:900px)');
+  const wide=()=>{ if(!mq.matches)close(false); };
+  if(mq.addEventListener)mq.addEventListener('change',wide); else if(mq.addListener)mq.addListener(wide);
+ }
+ window.addEventListener('pageshow',e=>{ if(e.persisted)close(false); });
 }
 // Public pages ship with "Log in" / "Try free" in the header. For a visitor who
 // is already signed in that reads as being logged out, so swap those links for
@@ -25,14 +65,17 @@ async function publicNavInit(){
  const label=(u.firstName&&u.firstName!=='Member')?('Go to app · '+u.firstName):'Go to app';
  const converted=[];
  $$('a').forEach(a=>{
-  const href=(a.getAttribute('href')||'').replace(/^\.\//,'');
+  // Compare resolved paths, not raw hrefs: Netlify's pretty URLs serve these
+  // pages with login.html rewritten to /login, which a match on the literal
+  // 'login.html' never caught, so the live site kept showing "Log in".
+  let path=''; try{path=new URL(a.getAttribute('href')||'',location.href).pathname.replace(/\.html$/,'')}catch(e){}
   const text=(a.textContent||'').trim().toLowerCase();
-  const isAuthLink=href==='login.html'||href==='signup.html'||href.startsWith('trial/free-trial');
+  const isAuthLink=/\/(login|signup)$/.test(path)||/\/trial\/free-trial$/.test(path);
   if(!isAuthLink)return;
   // Leave links that merely point at the app (e.g. "RavMizAI") alone unless
   // they are the sign-in / sign-up calls to action.
-  if(!/log ?in|sign ?up|try free|7-day trial|try ravmizai/.test(text))return;
-  a.setAttribute('href','app/home.html');
+  if(!/log ?in|sign ?(up|in)|try free|7-day trial|try ravmizai/.test(text))return;
+  a.setAttribute('href',new URL('app/home.html',SITE_ROOT).href);
   a.textContent=/try free|7-day trial|try ravmizai/.test(text)?label:'Go to app';
   converted.push(a);
  });
@@ -47,6 +90,10 @@ async function publicNavInit(){
    a.remove();
   }
  });
+
+ // Links that lead somewhere else for a signed-in member (the menu's
+ // Membership goes to billing instead of the trial signup).
+ $$('a[data-auth-href]').forEach(a=>a.setAttribute('href',a.dataset.authHref));
 }
 // Confirmation dialog. Resolves true when confirmed, false otherwise.
 // Built here rather than in the page markup so every page gets it without
@@ -185,6 +232,9 @@ function busy(form,on,label){
 }
 function setupLogin(){
  const f=$('#loginForm'); if(!f)return;
+ // Sent back here from a failed Google sign-in (see appInit).
+ let pending=null; try{pending=sessionStorage.getItem('rm_login_error');sessionStorage.removeItem('rm_login_error')}catch(e){}
+ if(pending)showErr(pending);
  f.addEventListener('submit',async e=>{
   e.preventDefault();clearMsg();
   const d=Object.fromEntries(new FormData(f));
@@ -202,6 +252,41 @@ function setupLogin(){
   }
  });
 }
+// "Continue with Google" on the login and signup pages. Supabase sends the
+// visitor to Google and back to the app, where auth.js picks the session up.
+function setupGoogle(){
+ $$('[data-google]').forEach(btn=>{
+  const label=btn.querySelector('span'), text=label?.textContent;
+  const reset=()=>{ btn.disabled=false; btn.removeAttribute('aria-busy'); if(label)label.textContent=text; };
+  btn.addEventListener('click',async()=>{
+   clearMsg();
+   btn.disabled=true; btn.setAttribute('aria-busy','true'); if(label)label.textContent='Opening Google…';
+   // From the signup page a new member goes on to checkout once Google sends
+   // them back, as an email signup does. Remembered across the round trip.
+   try{ if(btn.dataset.google==='signup')localStorage.setItem('rm_oauth_intent','signup'); else localStorage.removeItem('rm_oauth_intent'); }catch(e){}
+   try{
+    await RMAuth.signInWithGoogle({next:'app/home.html'});
+    // Leaving for Google; the button stays busy until the page unloads.
+   }catch(err){
+    try{localStorage.removeItem('rm_oauth_intent')}catch(e){}
+    showErr(RMAuth.friendly(err));
+    reset();
+   }
+  });
+  // Back from Google through the back/forward cache: no longer busy.
+  window.addEventListener('pageshow',e=>{ if(e.persisted)reset(); });
+ });
+}
+
+// Supabase reports a failed OAuth round trip in the URL (the fragment for the
+// implicit flow, the query string for PKCE) instead of creating a session.
+function oauthError(){
+ const p=new URLSearchParams(location.hash.slice(1)+'&'+location.search.slice(1));
+ const code=p.get('error'); if(!code)return '';
+ if(code==='access_denied')return 'Google sign-in was cancelled.';
+ return 'Google sign-in failed: '+(p.get('error_description')||code);
+}
+
 // "Forgot password" — request the reset email.
 function setupForgot(){
  const f=$('#forgotForm'); if(!f)return;
@@ -331,7 +416,12 @@ async function appInit(){
  // Under live auth the session is restored asynchronously, so check it before
  // deciding the visitor is signed out.
  const u=await RMAuth.currentUser();
- if(!u){location.href='../login.html';return}
+ if(!u){
+  // Back from Google with an error instead of a session: carry the reason to
+  // the login page rather than dropping it.
+  const why=oauthError(); if(why)try{sessionStorage.setItem('rm_login_error',why)}catch(e){}
+  location.href='../login.html';return
+ }
  await RMAuth.syncLegacyUser();
  $$('.userName').forEach(e=>e.textContent=u.firstName||'Member');
  $$('.userEmail').forEach(e=>e.textContent=u.email||'member@ravmizai.com');
@@ -365,6 +455,17 @@ async function appInit(){
 
  const page=pageName();
  const subscribed=await RMAuth.isSubscribed();
+
+ // Just signed up with Google from the signup page: go on to checkout, as an
+ // email signup does. One-shot, so a later visit to home is not redirected.
+ let intent=null; try{intent=localStorage.getItem('rm_oauth_intent');localStorage.removeItem('rm_oauth_intent')}catch(e){}
+ if(intent==='signup'&&!subscribed){
+  try{ const url=await RMAuth.startCheckout(); if(url){location.href=url;return} }
+  catch(err){
+   try{sessionStorage.setItem('rm_checkout_error',RMAuth.friendly(err))}catch(e){}
+   location.href='subscribe.html';return
+  }
+ }
 
  // Gate the conversation pages. Landing on one directly must not bypass this.
  if(MEMBER_ONLY.includes(page)&&!subscribed){location.href='subscribe.html';return}
@@ -550,5 +651,5 @@ document.addEventListener('DOMContentLoaded',()=>{
   }
   return;
  }
- setupForgot();setupReset();setupLogin();setupSignup('#signupForm');setupVerify();setupTrial();setupPayment();appInit();publicNavInit();
+ setupForgot();setupReset();setupLogin();setupGoogle();setupSignup('#signupForm');setupVerify();setupTrial();setupPayment();appInit();publicNavInit();
 });

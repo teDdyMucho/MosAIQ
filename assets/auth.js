@@ -12,6 +12,15 @@
   const cfg = window.RM_SUPABASE || {};
   const LIVE = Boolean(cfg.url && cfg.anonKey && window.supabase);
 
+  // The site root, taken from where this script was loaded (…/assets/auth.js)
+  // rather than from the page URL, so a redirect target is right from any page
+  // depth and under Netlify's pretty URLs (/login, /trial/free-trial).
+  const SITE_ROOT = (() => {
+    try { return new URL('../', document.currentScript.src).href; }
+    catch (e) { return location.origin + '/'; }
+  })();
+  const siteUrl = (path) => new URL(path, SITE_ROOT).href;
+
   let sb = null;
   if (LIVE) {
     sb = window.supabase.createClient(cfg.url, cfg.anonKey, {
@@ -42,6 +51,17 @@
     if (m.includes('failed to fetch') || m.includes('networkerror'))
       return 'Could not reach the server. Check your connection and try again.';
     return err?.message || 'Something went wrong. Please try again.';
+  }
+
+  // Email signups store first_name / last_name. Google sends given_name /
+  // family_name, or only full_name / name, so fall back through those.
+  function namesFrom(meta) {
+    const m = meta || {};
+    const full = String(m.full_name || m.name || '').trim();
+    const sp = full.indexOf(' ');
+    const first = String(m.first_name || m.given_name || (sp > 0 ? full.slice(0, sp) : full)).trim();
+    const last = String(m.last_name || m.family_name || (sp > 0 ? full.slice(sp + 1) : '')).trim();
+    return { first, last };
   }
 
   // Password policy, enforced client-side for fast feedback. Supabase enforces
@@ -94,6 +114,11 @@
 
     async resend() { localStorage.setItem('rm_verify_code', '111111'); return true; },
     async signOut() { localStorage.removeItem('rm_user'); return true; },
+
+    // There is no Google round trip without a backend to come back to.
+    async signInWithGoogle() {
+      throw new Error('Google sign-in needs the live backend.');
+    },
 
     // Offline mirror of activateTrial(): grants the 7-day trial locally so the
     // funnel still demos without a backend. No money is involved either way.
@@ -218,6 +243,44 @@
       return true;
     },
 
+    // Google sign-in through Supabase. The browser leaves for Google and comes
+    // back to `next` with the session in the URL, which the client on that page
+    // picks up (detectSessionInUrl). A first Google sign-in creates the account,
+    // and the handle_new_user trigger provisions its profile and wallet.
+    async signInWithGoogle({ next = 'app/home.html' } = {}) {
+      // With the provider switched off in Supabase, the authorize endpoint
+      // answers with a bare JSON error page; say so here instead.
+      if (!(await live.providerEnabled('google'))) {
+        throw new Error('Google sign-in is not available yet. Please continue with email.');
+      }
+      const { data, error } = await sb.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: siteUrl(next),
+          // Let people pick the account rather than reusing whichever one the
+          // browser last signed in with -- matters on shared devices.
+          queryParams: { prompt: 'select_account' }
+        }
+      });
+      if (error) throw error;
+      return data;   // the browser is already on its way to Google
+    },
+
+    // Whether an external provider is switched on for this project. Reads the
+    // public auth settings; if they cannot be read, lets Supabase decide.
+    async providerEnabled(name) {
+      try {
+        const res = await fetch(cfg.url.replace(/\/+$/, '') + '/auth/v1/settings', {
+          headers: { apikey: cfg.anonKey }
+        });
+        if (!res.ok) return true;
+        const s = await res.json();
+        return Boolean(s && s.external && s.external[name]);
+      } catch (e) {
+        return true;
+      }
+    },
+
     async currentUser() {
       let { data } = await sb.auth.getSession();
       let s = data?.session;
@@ -237,12 +300,12 @@
         if (refreshed?.session?.user) s = refreshed.session;
       }
 
-      const meta = s.user.user_metadata || {};
+      const names = namesFrom(s.user.user_metadata);
       return {
         id: s.user.id,
         email: s.user.email,
-        firstName: meta.first_name || 'Member',
-        lastName: meta.last_name || ''
+        firstName: names.first || 'Member',
+        lastName: names.last
       };
     },
 
@@ -427,6 +490,7 @@
     verify: impl.verify,
     resend: impl.resend,
     signOut: impl.signOut,
+    signInWithGoogle: impl.signInWithGoogle,
     currentUser: impl.currentUser,
     profile: impl.profile || (async () => null),
     isSubscribed: impl.isSubscribed,

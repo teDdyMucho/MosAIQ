@@ -78,6 +78,48 @@ If the auth pages fall back to the prototype (the `111111` hint appears), the
 environment variables did not reach the build. Check the deploy log for
 `build-config: wrote assets/supabase-config.js`.
 
+## 6. Google sign-in
+
+"Continue with Google" on the login and signup pages calls Supabase OAuth, but
+Supabase only allows it once the Google provider is switched on. Until then
+the button tells visitors Google sign-in is not available yet. To turn it on:
+
+1. **Google Cloud Console** → Google Auth Platform (APIs & Services)
+   - Branding / consent screen: app name *RavMizAI*, a support email.
+   - Audience: *External*. Scopes: `openid`, plus the default
+     `userinfo.email` and `userinfo.profile` (nothing else, so no review).
+   - Clients → **Create client** → *Web application*:
+     - Authorized JavaScript origins: `https://ravmizaii.netlify.app`
+       (plus `http://localhost:5173` while developing)
+     - Authorized redirect URIs:
+       `https://ujqrmjoklinyxbnvyswa.supabase.co/auth/v1/callback`
+       (the exact value is shown on Supabase's Google provider page)
+   - Copy the **Client ID** and **Client secret**.
+2. **Supabase** → Authentication → Sign In / Providers → **Google**: enable it,
+   paste the Client ID and secret, save.
+3. **Supabase** → Authentication → URL Configuration (step 4 above) must list
+   the live site, or Supabase sends people back to the Site URL instead:
+   - Site URL: `https://ravmizaii.netlify.app`
+   - Redirect URLs: `https://ravmizaii.netlify.app/**`
+4. **Supabase** → SQL Editor: run `sql/006_oauth_profile_names.sql`, so a
+   Google member's profile gets their name instead of "Member".
+
+No redeploy is needed: the button checks the provider setting on each click.
+
+How it behaves: a first Google sign-in creates the account. From the signup
+page it then continues to Stripe Checkout, the same as an email signup; from
+the login page it lands on the app home. A cancelled or failed Google sign-in
+returns to the login page with the reason.
+
+## 7. "Powered by Netlify" badge
+
+Netlify injects this badge itself; it is not in the code. Projects created on
+a Free plan on or after Aug 19, 2026 have it on by default. Turn it off per
+project, no upgrade or redeploy needed:
+
+**Netlify → the project → Project configuration → General → Powered by
+Netlify badge → off → Save.**
+
 ## Before taking real users
 
 These are still open and are **not** fixed by deploying:

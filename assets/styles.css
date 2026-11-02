@@ -51,7 +51,8 @@ a:focus-visible,button:focus-visible,input:focus-visible,select:focus-visible,te
 .navtools .btn-outline{border-color:transparent}
 .navtools .btn-outline:hover{background:var(--tint)}
 .iconbtn{width:44px;height:44px;border-radius:999px;display:grid;place-items:center;border:1px solid var(--line);background:#FFFFFF;color:var(--navy);text-decoration:none;cursor:pointer;font-weight:700}
-.mobile-toggle{display:none}
+/* The mobile header and full-screen menu are in site-common.css, shared with
+   index.html. */
 
 /* sections */
 .section{padding:clamp(56px,8vw,104px) 0}
@@ -116,6 +117,10 @@ textarea.input{height:120px;padding-top:14px}
 .checkline input{accent-color:var(--navy);margin-top:3px}
 .divider{display:flex;align-items:center;gap:12px;color:var(--muted);font-size:12px;font-weight:700;letter-spacing:.12em;margin:20px 0}
 .divider:before,.divider:after{content:"";height:1px;background:var(--line);flex:1}
+.googleBtn{gap:12px}
+.googleBtn .gLogo{width:20px;height:20px;flex:none}
+.oauthNote{font-size:12px;color:var(--muted);text-align:center;margin:12px 0 0;line-height:1.5}
+.oauthNote a{color:var(--gold2)}
 .passwordRules{font-size:13px;color:var(--muted);display:grid;gap:3px;margin:-6px 0 16px}
 .error{padding:10px 14px;border-radius:10px;background:#FDECEE;border:1px solid #F3B8BE;color:#A4232F;font-size:14px;margin-bottom:14px;display:none}
 .success{padding:10px 14px;border-radius:10px;background:#E8F7EF;border:1px solid #A9DFC2;color:#17663F;font-size:14px;margin-bottom:14px;display:none}
@@ -232,9 +237,6 @@ textarea.input{height:120px;padding-top:14px}
 @media(max-width:700px){
  .wrap{width:calc(100% - 40px)}
  .appMain{width:calc(100% - 32px)}
- .navlinks{display:none;position:absolute;left:16px;right:16px;top:76px;padding:12px 16px;background:#FFFFFF;border:1px solid var(--line);border-radius:14px;box-shadow:0 18px 50px rgba(12,33,71,.12);flex-direction:column;align-items:stretch;gap:0}
- .navlinks.open{display:flex}.mobile-toggle{display:grid}
- .navtools .btn-outline{display:none}
  .brand span{font-size:21px}
  .featureGrid,.row2,.walletGrid,.balanceRow,.optionGrid{grid-template-columns:1fr}
  .stats{grid-template-columns:1fr 1fr 1fr;gap:10px}.stat b{font-size:26px}
