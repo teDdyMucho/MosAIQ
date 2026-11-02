@@ -56,6 +56,10 @@ p{margin:0}
    footage is actually visible behind the phone. */
 .hero-stage:after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(100deg,rgba(255,255,255,.86) 0%,rgba(255,255,255,.66) 38%,rgba(255,255,255,.20) 62%,rgba(255,255,255,0) 100%)}
 @media (max-width:900px){
+ /* Keep the mobile header (menu, logo, Sign in) on screen while scrolling, as
+    the About and Let's Chat headers already do. Sticky, not fixed, so the
+    page needs no top padding to make room for it. */
+ .top{position:sticky;top:0;z-index:60}
  /* On narrow screens the stage holds the copy AND the phone mockup, well over
     a screen tall, and the portrait cut is only 360x640. Covering all of it
     blew the footage up past 2x, so the text sat on hazy sky under a heavy
