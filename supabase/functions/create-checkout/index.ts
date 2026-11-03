@@ -83,11 +83,23 @@ Deno.serve(async (req) => {
   // 2. Already a member? Do not sell a second subscription.
   const { data: profile } = await admin
     .from('profiles')
-    .select('stripe_customer_id,stripe_subscription_id,subscription_status,first_name,last_name')
+    .select('stripe_customer_id,stripe_subscription_id,subscription_status,subscribed_until,first_name,last_name')
     .eq('id', user.id)
     .maybeSingle();
 
-  if (profile?.subscription_status === 'active' || profile?.subscription_status === 'trialing') {
+  // Block a second subscription only when the first is genuinely still live.
+  // Checking subscription_status alone was wrong: a lapsed trial keeps the
+  // string 'trialing' once its period has passed, so an expired member was
+  // told "already active" while the access gate — which does check the expiry
+  // — correctly treated them as not a member. They could neither use the app
+  // nor pay to fix it.
+  const periodEnd = profile?.subscribed_until ? Date.parse(profile.subscribed_until) : null;
+  const notExpired = periodEnd === null || Number.isNaN(periodEnd) || periodEnd > Date.now();
+  const stillLive =
+    (profile?.subscription_status === 'active' || profile?.subscription_status === 'trialing') &&
+    notExpired;
+
+  if (stillLive) {
     return json({ ok: false, reason: 'already_subscribed',
                   message: 'Your membership is already active.' }, 409);
   }

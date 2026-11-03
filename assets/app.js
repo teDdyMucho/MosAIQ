@@ -62,7 +62,9 @@ async function publicNavInit(){
   return;
  }
 
- const label=(u.firstName&&u.firstName!=='Member')?('Go to app · '+u.firstName):'Go to app';
+ // "Ask RavAI" rather than "Go to app": it names what the member gets, not
+ // where the link goes.
+ const label=(u.firstName&&u.firstName!=='Member')?('Ask RavAI · '+u.firstName):'Ask RavAI';
  const converted=[];
  $$('a').forEach(a=>{
   // Compare resolved paths, not raw hrefs: Netlify's pretty URLs serve these
@@ -76,7 +78,7 @@ async function publicNavInit(){
   // they are the sign-in / sign-up calls to action.
   if(!/log ?in|sign ?(up|in)|try free|7-day trial|try ravmizai/.test(text))return;
   a.setAttribute('href',new URL('app/home.html',SITE_ROOT).href);
-  a.textContent=/try free|7-day trial|try ravmizai/.test(text)?label:'Go to app';
+  a.textContent=/try free|7-day trial|try ravmizai/.test(text)?label:'Ask RavAI';
   converted.push(a);
  });
 
@@ -230,16 +232,54 @@ function busy(form,on,label){
  if(on){b.dataset.label??=b.textContent;b.disabled=true;b.style.opacity='.6';b.style.cursor='wait';if(label)b.textContent=label;}
  else{b.disabled=false;b.style.opacity='';b.style.cursor='';if(b.dataset.label)b.textContent=b.dataset.label;}
 }
+// "Remember me" was a checkbox with no name and no handler, so nothing was
+// ever remembered. It now fills the email back in on the next visit.
+//
+// Only the email: the password belongs in the browser's own password manager
+// (the "password for ravmizaii.netlify.app" prompt), which stores it in the
+// OS keychain. Keeping a password in localStorage would put it in plain text
+// on the device, readable by anything running on the page.
+const REMEMBER_KEY='rm_remember_email';
+
+function restoreRememberedEmail(f){
+ const box=$('#rememberMe'); const input=f.querySelector('[name=email]');
+ if(!box||!input)return;
+ let saved=null; try{saved=localStorage.getItem(REMEMBER_KEY)}catch(e){}
+ if(saved){
+  input.value=saved;
+  box.checked=true;
+  // Send focus to the password, since the email is already filled.
+  const pw=f.querySelector('[name=password]');
+  if(pw)setTimeout(()=>{try{pw.focus()}catch(e){}},50);
+ }else{
+  // Unticking it should forget immediately, not at the next sign-in.
+  box.checked=box.checked;
+ }
+ box.addEventListener('change',()=>{
+  if(!box.checked){try{localStorage.removeItem(REMEMBER_KEY)}catch(e){}}
+ });
+}
+
+function rememberEmail(f,email){
+ const box=$('#rememberMe');
+ try{
+  if(box&&box.checked&&email)localStorage.setItem(REMEMBER_KEY,email);
+  else localStorage.removeItem(REMEMBER_KEY);
+ }catch(e){}
+}
+
 function setupLogin(){
  const f=$('#loginForm'); if(!f)return;
  // Sent back here from a failed Google sign-in (see appInit).
  let pending=null; try{pending=sessionStorage.getItem('rm_login_error');sessionStorage.removeItem('rm_login_error')}catch(e){}
  if(pending)showErr(pending);
+ restoreRememberedEmail(f);
  f.addEventListener('submit',async e=>{
   e.preventDefault();clearMsg();
   const d=Object.fromEntries(new FormData(f));
   const email=String(d.email||'').trim();
   if(!email||!d.password)return showErr('Enter your email and password.');
+  rememberEmail(f,email);
   busy(f,true,'Signing in…');
   try{
    const {needsVerification}=await RMAuth.signIn({email,password:d.password});
@@ -491,6 +531,9 @@ async function appInit(){
  }
  await setupBillingStatus(subscribed);
  await setupBillingControls();
+ await setupBalances();
+ await setupActivity();
+ await setupWalletMembership(subscribed);
 }
 
 // Call / Text buttons: send non-members to the subscription page instead of
@@ -531,6 +574,130 @@ function setupCheckoutButton(){
 
 // billing.html ships with a hardcoded "Membership active". Replace it with the
 // real state so the page cannot claim a membership the account does not have.
+// Real balances on the home and wallet pages. These were hardcoded ("0
+// completed / 21 available", "240 chats") and showed the same numbers to every
+// member regardless of what they actually had left.
+// Seconds as a human duration. Keeps the seconds visible below an hour, so a
+// short call is not rounded out of sight: "45s", "4m 20s", "1h 10m".
+function fmtDuration(totalSeconds){
+ const s=Math.max(0,Math.floor(Number(totalSeconds)||0));
+ if(s<60)return s+'s';
+ const h=Math.floor(s/3600), m=Math.floor((s%3600)/60), rem=s%60;
+ if(h)return h+'h'+(m?' '+m+'m':'');
+ return m+'m'+(rem?' '+rem+'s':'');
+}
+
+async function setupBalances(){
+ const slots=['#homeMinutes','#homeChats','#walletMinutes','#walletChats'].filter(s=>$(s));
+ if(!slots.length)return;
+
+ const w=await RMAuth.wallet();
+ // A failed read must not read as "you have nothing left".
+ if(!w){
+  ['#homeMinutes','#homeChats','#walletMinutes','#walletChats'].forEach(s=>{const e=$(s);if(e)e.textContent='—';});
+  const note='Balance unavailable right now. Please refresh.';
+  ['#homeBalanceNote','#walletNote'].forEach(s=>{const e=$(s);if(e)e.textContent=note;});
+  return;
+ }
+
+ // Seconds are the source of truth; minutes are derived and kept only for
+ // anything still reading the old column.
+ const secs=Number(w.seconds_balance ?? (Number(w.minutes_balance)||0)*60)||0;
+ const chats=Number(w.chats_balance)||0;
+
+ const set=(sel,val)=>{const e=$(sel);if(e)e.textContent=val;};
+ set('#homeMinutes',fmtDuration(secs));
+ set('#homeChats',String(chats));
+ set('#walletMinutes',fmtDuration(secs));
+ set('#walletChats',String(chats));
+
+ const empty=secs===0&&chats===0;
+ const note=empty
+  ? 'No balance yet. Voice time and messages are added when your membership starts.'
+  : 'Updated '+(w.updated_at?new Date(w.updated_at).toLocaleDateString():'just now')+'.';
+ set('#homeBalanceNote',note);
+ if($('#walletNote'))$('#walletNote').textContent=
+   empty?note:'Voice time and text chats are independent balances.';
+}
+
+// Membership block on the wallet page. It read "Member · Active" for everyone,
+// including lapsed accounts — the same contradiction the billing page had.
+async function setupWalletMembership(subscribed){
+ const label=$('#walletMemberLabel'); if(!label)return;
+ const chip=$('#walletMemberChip'), note=$('#walletMemberNote');
+ const p=await RMAuth.profile();
+ const until=p?.subscribed_until?new Date(p.subscribed_until):null;
+
+ label.textContent=subscribed?'Member':'Not a member';
+ if(chip){
+  chip.textContent=subscribed?'Active':'Inactive';
+  chip.style.display='';
+  chip.style.color=subscribed?'':'#B4232A';
+  chip.style.borderColor=subscribed?'':'#E7B9BC';
+ }
+ if(note){
+  note.textContent=subscribed
+   ? (until?'Renews '+until.toLocaleDateString()+'.':'Active with no expiry set.')
+   : 'Start a membership to use voice calls and text conversations.';
+ }
+}
+
+// Recent activity on the wallet page, from wallet_ledger. These rows were
+// hardcoded ("-4m 10s", "+1h"), so they showed movements to a member whose
+// balance was zero — the list and the balance contradicted each other.
+async function setupActivity(){
+ const box=$('#walletActivity'); if(!box)return;
+
+ const rows=await RMAuth.ledger(6);
+ if(rows===null){
+  box.innerHTML='<p class="appSub">Activity unavailable right now. Please refresh.</p>';
+  return;
+ }
+ if(!rows.length){
+  box.innerHTML='<p class="appSub">No activity yet. Grants and usage will appear here.</p>';
+  return;
+ }
+
+ // 'debit' spends; everything else adds. The ledger stores magnitudes, so the
+ // sign comes from the kind, not from the stored number.
+ const neg=k=>k==='debit';
+ const fmt=r=>{
+  const parts=[];
+  // Prefer seconds; fall back to the legacy minutes column on older rows.
+  const secs=Number(r.seconds)||((Number(r.minutes)||0)*60);
+  if(secs)parts.push(fmtDuration(secs));
+  if(r.chats)parts.push(r.chats+(r.chats===1?' chat':' chats'));
+  if(!parts.length)return '—';
+  return (neg(r.kind)?'-':'+')+parts.join(' · ');
+ };
+ const when=t=>{
+  const d=new Date(t); if(isNaN(d))return '';
+  const mins=(Date.now()-d)/60000;
+  if(mins<2)return 'Just now';
+  if(mins<60)return Math.round(mins)+'m ago';
+  if(mins<1440)return Math.round(mins/60)+'h ago';
+  return d.toLocaleDateString(undefined,{month:'short',day:'numeric'});
+ };
+
+ box.innerHTML='';
+ for(const r of rows){
+  const row=document.createElement('div');
+  row.className='activityRow';
+  const left=document.createElement('div');
+  const b=document.createElement('b');
+  // textContent, never innerHTML: description is stored data.
+  b.textContent=r.description||r.kind;
+  const s=document.createElement('small');
+  s.textContent=when(r.created_at);
+  left.append(b,s);
+  const amt=document.createElement('span');
+  amt.className=neg(r.kind)?'red':'green';
+  amt.textContent=fmt(r);
+  row.append(left,amt);
+  box.appendChild(row);
+ }
+}
+
 // Card summary + the buttons that open Stripe's Billing Portal.
 async function setupBillingControls(){
  const slot=$('#cardSummary');

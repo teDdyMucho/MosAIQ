@@ -165,6 +165,14 @@
       const u = proto.read();
       return u ? { first_name: u.first, last_name: u.last, is_member: Boolean(u.member) } : null;
     },
+    // Offline mirror of the wallet read.
+    async wallet() {
+      const u = proto.read();
+      if (!u) return null;
+      return { seconds_balance: (u.minutes ?? 0) * 60, minutes_balance: u.minutes ?? 0, chats_balance: u.chats ?? 0 };
+    },
+    // No ledger table offline; an empty list is honest here.
+    async ledger() { return []; },
     async currentUser() {
       const u = proto.read();
       return u && u.verified ? { email: u.email, firstName: u.first, lastName: u.last } : null;
@@ -322,6 +330,40 @@
         .maybeSingle();
       if (error) { console.warn('[RavMizAI] profile read failed:', error.message); return null; }
       return data;
+    },
+
+    // The member's real voice and chat balances. RLS limits the row to the
+    // caller, so no user id has to be passed or trusted from the page.
+    // Returns null on failure so a transient read never blanks the card with
+    // a misleading zero.
+    async wallet() {
+      const { data: sess } = await sb.auth.getSession();
+      const uid = sess?.session?.user?.id;
+      if (!uid) return null;
+      const { data, error } = await sb
+        .from('wallets')
+        .select('seconds_balance,minutes_balance,chats_balance,updated_at')
+        .eq('user_id', uid)
+        .maybeSingle();
+      if (error) { console.warn('[RavMizAI] wallet read failed:', error.message); return null; }
+      return data;
+    },
+
+    // Recent wallet movements, newest first. RLS limits the rows to the
+    // caller. Returns null on failure so the page can say so instead of
+    // showing an empty list that reads as "nothing ever happened".
+    async ledger(limit = 6) {
+      const { data: sess } = await sb.auth.getSession();
+      const uid = sess?.session?.user?.id;
+      if (!uid) return null;
+      const { data, error } = await sb
+        .from('wallet_ledger')
+        .select('kind,minutes,chats,description,created_at')
+        .eq('user_id', uid)
+        .order('created_at', { ascending: false })
+        .limit(limit);
+      if (error) { console.warn('[RavMizAI] ledger read failed:', error.message); return null; }
+      return data || [];
     },
 
     // Starts Stripe Checkout and returns the hosted URL to redirect to.
@@ -493,6 +535,8 @@
     signInWithGoogle: impl.signInWithGoogle,
     currentUser: impl.currentUser,
     profile: impl.profile || (async () => null),
+    wallet: impl.wallet || (async () => null),
+    ledger: impl.ledger || (async () => []),
     isSubscribed: impl.isSubscribed,
     startCheckout: impl.startCheckout,
     billingPortal: impl.billingPortal,

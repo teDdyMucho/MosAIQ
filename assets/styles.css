@@ -172,7 +172,8 @@ textarea.input{height:120px;padding-top:14px}
 .greeting{font-size:13px;font-weight:700;letter-spacing:.16em;text-transform:uppercase;color:var(--brown)}
 .appGrid{display:grid;grid-template-columns:1.3fr .7fr;gap:20px;margin-top:20px}
 .appCard{background:#FFFFFF;border:1px solid var(--line);border-radius:var(--r);padding:24px}
-.aiHome h2{font-family:var(--serif);font-weight:400;font-size:36px;line-height:1.1;margin:14px 0 6px}
+.aiHome h2{font-family:var(--serif);font-weight:400;font-size:36px;line-height:1.1;margin:0 0 6px;padding-right:236px}
+.aiHome>.appSub{padding-right:236px}
 .homePrompts{display:flex;gap:8px;flex-wrap:wrap;margin-top:18px}
 .homePrompts span{padding:7px 12px;border-radius:999px;background:var(--tint);border:1px solid var(--line);font-size:14px;color:var(--muted)}
 .recList{display:grid;gap:10px;margin-top:12px}
@@ -297,3 +298,28 @@ textarea.input{height:120px;padding-top:14px}
 .pwToggle .eyeOff{display:none}
 .pwToggle[aria-pressed="true"] .eyeOn{display:none}
 .pwToggle[aria-pressed="true"] .eyeOff{display:block}
+
+/* ---- rabbi photo on the member home card ------------------------------ */
+/* Replaces the ✦ orb, pinned to the card's top-right corner. Absolute
+   positioning keeps it out of the text flow, so the heading and buttons stay
+   where they were. */
+.aiHome{position:relative}
+.homeAvatar{position:absolute;top:22px;right:22px;width:200px;height:200px;border-radius:50%;overflow:hidden;margin:0;border:3px solid var(--gold-d);box-shadow:0 0 0 7px rgba(212,160,58,.14)}
+/* The source is a wide lectern shot, so scale up and pull towards the head to
+   get an actual face close-up inside the circle. */
+.homeAvatar img{width:100%;height:100%;object-fit:cover;object-position:48% 20%;transform:scale(1.25);transform-origin:50% 24%;display:block}
+@media (max-width:600px){
+ .homeAvatar{top:16px;right:16px;width:120px;height:120px}
+ .aiHome h2,
+ .aiHome .appSub{padding-right:148px}
+}
+
+/* ---- Recommended list: real links ------------------------------------- */
+/* These were <div>s with an arrow — they looked clickable but went nowhere.
+   Now <a>, so they need the link defaults reset and a visible hover/focus. */
+a.rec{text-decoration:none;color:inherit;transition:background .15s,border-color .15s,transform .12s}
+a.rec:hover{background:#EDF2FA;border-color:#C5D3E8;transform:translateX(2px)}
+a.rec:active{transform:translateX(1px)}
+a.rec:focus-visible{outline:2px solid var(--gold-d);outline-offset:2px}
+a.rec span{transition:transform .15s}
+a.rec:hover span{transform:translateX(3px)}
